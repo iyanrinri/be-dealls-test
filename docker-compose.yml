@@ -1,0 +1,46 @@
+#version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-myuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
+      POSTGRES_DB: ${POSTGRES_DB:-mydb}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  payroll_app:
+    build:
+      context: ./payroll_app
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: ${NODE_ENV:-development}
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./payroll_app:/usr/src/app
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${POSTGRES_USER:-myuser}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
+      DB_DATABASE: ${POSTGRES_DB:-mydb}
+      NODE_ENV: ${NODE_ENV:-development}
+    command: >
+      sh -c "
+      if [ '${NODE_ENV}' = 'production' ]; then
+        npm run start:prod;
+      else
+        npm run start:dev;
+      fi
+      "
+
+volumes:
+  pgdata:
+
