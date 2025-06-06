@@ -14,6 +14,8 @@ import { AuditLogModule } from './audit-logs/audit-log.module';
 import { OvertimeModule } from './overtime/overtime.module';
 import * as dotenv from 'dotenv';
 import { Overtime } from './overtime/entities/overtime.entity';
+import { Reimbursement } from './reimbursements/entities/reimbursement.entity';
+import { ReimbursementModule } from './reimbursements/reimbursement.module';
 dotenv.config();
 
 @Module({
@@ -25,13 +27,14 @@ dotenv.config();
       username: process.env.DB_USERNAME || 'dealls',
       password: process.env.DB_PASSWORD || 'd3alls',
       database: process.env.DB_DATABASE || 'be_dealls',
-      entities: [User, AuditLog, AttendancePeriod, Attendance, Overtime],
+      entities: [User, AuditLog, AttendancePeriod, Attendance, Overtime, Reimbursement],
       synchronize: false,
     }),
     AuthModule,
     AttendanceModule,
     AuditLogModule,
     OvertimeModule,
+    ReimbursementModule,
   ],
   controllers: [],
   providers: [AppService],

@@ -45,17 +45,15 @@ describe('OvertimeController', () => {
         ip_address: '127.0.0.3',
       };
       const dto: CreateOvertimeDto = {
-        overtimeDate: '2025-06-06',
         hours: 2.5,
-        reason: 'Project deadline',
       };
       const mockRequest = { user };
       const expectedResult = {
         id: 1,
         userId: user.id,
-        overtimeDate: new Date(dto.overtimeDate),
+        overtimeDate: new Date(),
         hours: dto.hours,
-        reason: dto.reason,
+        reason: null,
         createdBy: user.id,
         ipAddress: user.ip_address,
       };
@@ -67,9 +65,7 @@ describe('OvertimeController', () => {
 
     it('should return unauthorized message if no user in request', async () => {
       const dto: CreateOvertimeDto = {
-        overtimeDate: '2025-06-06',
         hours: 2,
-        reason: 'Extra work',
       };
       const mockRequest = { user: null };
       mockOvertimeService.submitOvertime.mockClear();

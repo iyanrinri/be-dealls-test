@@ -11,9 +11,9 @@ import { AuditLogModule } from '../audit-logs/audit-log.module';
   imports: [
     TypeOrmModule.forFeature([Attendance, AttendancePeriod]),
     AuthModule,
-    AuditLogModule, // Provides AuditLogService and AuditLogRepository
+    AuditLogModule,
   ],
   controllers: [AttendanceController],
-  providers: [AttendanceService], // Removed AuditLogService
+  providers: [AttendanceService],
 })
 export class AttendanceModule {}

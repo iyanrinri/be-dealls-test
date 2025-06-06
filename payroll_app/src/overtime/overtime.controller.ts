@@ -10,7 +10,7 @@ export class OvertimeController {
   constructor(private readonly overtimeService: OvertimeService) {}
 
   @UseGuards(AuthGuard)
-  @Post('submit')
+  @Post()
   @ApiBearerAuth()
   async submitOvertime(
     @Req() request: Request,

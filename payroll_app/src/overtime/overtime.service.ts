@@ -60,15 +60,15 @@ export class OvertimeService {
     });
 
     if (!existingOvertime) {
-        const overtime = this.overtimeRepository.create({
-            userId: user.id,
-            attendancePeriodId: attendance?.attendancePeriodId,
-            overtimeDate: overtimeDate,
-            hours: dto.hours,
-            createdBy: user.id,
-            ipAddress: user.ip_address,
-        });
-        return this.overtimeRepository.save(overtime);
+      const overtime = this.overtimeRepository.create({
+        userId: user.id,
+        attendancePeriodId: attendance?.attendancePeriodId,
+        overtimeDate: overtimeDate,
+        hours: dto.hours,
+        createdBy: user.id,
+        ipAddress: user.ip_address,
+      });
+      return this.overtimeRepository.save(overtime);
     }
     existingOvertime.hours = dto.hours;
     existingOvertime.updatedBy = user.id;
