@@ -8,7 +8,7 @@ export class Attendance {
   @Column({ type: 'bigint', name: 'user_id' })
   userId: number;
 
-  @Column({ type: 'bigint', name: 'attendance_period_id'})
+  @Column({ type: 'bigint', name: 'attendance_period_id' })
   attendancePeriodId: number;
 
   @Column({ type: 'date', name: 'attendance_date' })
