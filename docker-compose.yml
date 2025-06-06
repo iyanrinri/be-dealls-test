@@ -5,9 +5,9 @@ services:
     image: postgres:15
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-dealls}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-d3alls}
-      POSTGRES_DB: ${POSTGRES_DB:-be_dealls}
+      POSTGRES_USER: ${DB_USERNAME:-dealls}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-d3alls}
+      POSTGRES_DB: ${DB_DATABASE:-be_dealls}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -26,11 +26,11 @@ services:
     volumes:
       - ./payroll_app:/usr/src/app
     environment:
-      DB_HOST: postgres
+      DB_HOST: ${DB_HOST:-postgres}
       DB_PORT: 5432
-      DB_USERNAME: ${POSTGRES_USER:-myuser}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
-      DB_DATABASE: ${POSTGRES_DB:-mydb}
+      DB_USERNAME: ${DB_USERNAME:-dealls}
+      DB_PASSWORD: ${DB_PASSWORD:-d3alls}
+      DB_DATABASE: ${DB_DATABASE:-be_dealls}
       NODE_ENV: ${NODE_ENV:-development}
     command: >
       sh -c "
