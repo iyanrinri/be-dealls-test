@@ -25,7 +25,7 @@ export class CreateOvertimeTable1749165062497 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'payroll_period_id',
+            name: 'attendance_period_id',
             type: 'bigint',
             isNullable: false,
           },
@@ -86,8 +86,8 @@ export class CreateOvertimeTable1749165062497 implements MigrationInterface {
             columnNames: ['user_id', 'overtime_date'],
           }),
           new TableIndex({
-            name: 'idx_overtime_payroll_period',
-            columnNames: ['payroll_period_id'],
+            name: 'idx_overtime_attendance_period',
+            columnNames: ['attendance_period_id'],
           }),
         ],
       }),
@@ -102,8 +102,8 @@ export class CreateOvertimeTable1749165062497 implements MigrationInterface {
         onDelete: 'CASCADE',
       }),
       new TableForeignKey({
-        columnNames: ['payroll_period_id'],
-        referencedTableName: 'payroll_periods',
+        columnNames: ['attendance_period_id'],
+        referencedTableName: 'attendance_periods',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
       }),

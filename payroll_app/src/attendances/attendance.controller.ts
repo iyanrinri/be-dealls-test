@@ -7,43 +7,38 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AttendanceService } from './attendance.service';
-import { CreatePayrollPeriodDto } from './dto/create-payroll-period.dto';
-// import { CreateAttendanceDto } from './dto/create-attendance.dto';
-import { AdminGuard } from '../auth/guards/admin.guard'; // Assuming you have an admin guard
+import { CreateAttendancePeriodDto } from './dto/create-attendance-period.dto';
+import { AdminGuard } from '../auth/guards/admin.guard';
+import { ApiBearerAuth } from '@nestjs/swagger'; // Assuming you have an admin guard
 
 @Controller('attendance')
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
   @UseGuards(AdminGuard)
-  @Post('payroll-period')
-  createPayrollPeriod(
+  @Post('attendance-period')
+  @ApiBearerAuth()
+  createAttendancePeriod(
     @Req() request: Request,
-    @Body() createPayrollPeriodDto: CreatePayrollPeriodDto,
+    @Body() createAttendancePeriodDto: CreateAttendancePeriodDto,
   ) {
     const reqUser = request.user ? request.user : null;
     if (!reqUser) {
       return { message: 'Unauthorized' };
     }
-    return this.attendanceService.createPayrollPeriod(
-      createPayrollPeriodDto,
+    return this.attendanceService.createAttendancePeriod(
+      createAttendancePeriodDto,
       reqUser,
     );
   }
 
-  // @UseGuards(AdminGuard)
-  // @Post('submit')
-  // submitAttendance(
-  //   @Req() request: Request,
-  //   @Body() createAttendanceDto: CreateAttendanceDto,
-  // ) {
-  //   const reqUser = request.user ? request.user : null;
-  //   if (!reqUser) {
-  //     return { message: 'Unauthorized' };
-  //   }
-  //   return this.attendanceService.submitAttendance(
-  //     reqUser.id.toString(),
-  //     createAttendanceDto,
-  //   );
-  // }
+  @Post('check')
+  @ApiBearerAuth()
+  submitAttendance(@Req() request: Request) {
+    const reqUser = request.user ? request.user : null;
+    if (!reqUser) {
+      return { message: 'Unauthorized' };
+    }
+    return this.attendanceService.submitAttendance(reqUser);
+  }
 }

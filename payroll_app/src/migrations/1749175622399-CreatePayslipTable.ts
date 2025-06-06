@@ -25,7 +25,7 @@ export class CreatePayslipTable1749175622399 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'payroll_period_id',
+            name: 'attendance_period_id',
             type: 'integer',
             isNullable: false,
           },
@@ -87,13 +87,13 @@ export class CreatePayslipTable1749175622399 implements MigrationInterface {
         uniques: [
           {
             name: 'unique_payslip',
-            columnNames: ['user_id', 'payroll_period_id'],
+            columnNames: ['user_id', 'attendance_period_id'],
           },
         ],
         indices: [
           new TableIndex({
             name: 'idx_payslips_user_period',
-            columnNames: ['user_id', 'payroll_period_id'],
+            columnNames: ['user_id', 'attendance_period_id'],
           }),
         ],
       }),
@@ -108,8 +108,8 @@ export class CreatePayslipTable1749175622399 implements MigrationInterface {
         onDelete: 'CASCADE',
       }),
       new TableForeignKey({
-        columnNames: ['payroll_period_id'],
-        referencedTableName: 'payroll_periods',
+        columnNames: ['attendance_period_id'],
+        referencedTableName: 'attendance_periods',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
       }),

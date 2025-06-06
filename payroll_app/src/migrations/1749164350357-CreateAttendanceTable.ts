@@ -25,7 +25,7 @@ export class CreateAttendanceTable1749164350357 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'payroll_period_id',
+            name: 'attendance_period_id',
             type: 'bigint',
             isNullable: false,
           },
@@ -87,8 +87,8 @@ export class CreateAttendanceTable1749164350357 implements MigrationInterface {
             columnNames: ['clock_in_time', 'clock_out_time'],
           }),
           new TableIndex({
-            name: 'idx_attendance_payroll_period',
-            columnNames: ['payroll_period_id'],
+            name: 'idx_attendance_attendance_period',
+            columnNames: ['attendance_period_id'],
           }),
         ],
       }),
@@ -103,8 +103,8 @@ export class CreateAttendanceTable1749164350357 implements MigrationInterface {
         onDelete: 'CASCADE',
       }),
       new TableForeignKey({
-        columnNames: ['payroll_period_id'],
-        referencedTableName: 'payroll_periods',
+        columnNames: ['attendance_period_id'],
+        referencedTableName: 'attendance_periods',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
       }),

@@ -1,15 +1,24 @@
-import { IsDate, IsNotEmpty } from 'class-validator';
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreatePayrollPeriodDto {
+export class CreateAttendancePeriodDto {
   @ApiProperty({ example: '2025-06-01', required: true })
   @IsNotEmpty({ message: 'startDate is required' })
-  @IsDate({ message: 'startDate must be a valid date' })
+  @IsDateString({}, { message: 'startDate must be a valid date (YYYY-MM-DD)' })
   startDate: string;
+
   @ApiProperty({ example: '2025-06-30', required: true })
   @IsNotEmpty({ message: 'endDate is required' })
-  @IsDate({ message: 'endDate must be a valid date' })
+  @IsDateString({}, { message: 'endDate must be a valid date (YYYY-MM-DD)' })
   endDate: string;
+
   @ApiProperty({ example: 'open', required: false })
+  @IsOptional()
+  @IsString({ message: 'status must be a string' })
   status?: string;
 }

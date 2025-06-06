@@ -1,17 +1,20 @@
 import { DataSource } from 'typeorm';
-import { User } from '../users/user.entity';
-import { AuditLog } from '../audit-logs/audit-log.entity';
+import { User } from '../users/entities/user.entity';
+import { AuditLog } from '../audit-logs/entities/audit-log.entity';
 import * as bcrypt from 'bcrypt';
 import { instanceToPlain } from 'class-transformer';
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 
 async function seed() {
   const dataSource = new DataSource({
     type: 'postgres',
-    host: process.env.DB_HOST || 'localhost',
+    host: process.env.DB_HOST || 'postgres',
     port: Number(process.env.DB_PORT) || 5432,
-    username: process.env.DB_USERNAME || 'myuser',
-    password: process.env.DB_PASSWORD || 'mypassword',
-    database: process.env.DB_DATABASE || 'mydb',
+    username: process.env.DB_USERNAME || 'dealls',
+    password: process.env.DB_PASSWORD || 'd3alls',
+    database: process.env.DB_DATABASE || 'be_dealls',
     entities: [User, AuditLog],
   });
 
@@ -36,13 +39,13 @@ async function seed() {
     await dataSource.manager.save(employee);
 
     const auditLog = new AuditLog();
-    auditLog.user_id = admin.id;
-    auditLog.record_id = employee.id.toString();
-    auditLog.table_name = 'users';
+    auditLog.userId = admin.id;
+    auditLog.recordId = employee.id.toString();
+    auditLog.tableName = 'users';
     auditLog.action = 'create';
     auditLog.changes = instanceToPlain(employee);
-    auditLog.request_id = `employee${i}`;
-    auditLog.ip_address = '127.0.0.1';
+    auditLog.requestId = `employee${i}`;
+    auditLog.ipAddress = '127.0.0.1';
     await dataSource.manager.save(auditLog);
   }
   console.log('Seeding database completed.');

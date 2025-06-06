@@ -10,6 +10,7 @@ import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../../common/decorators/public.decorator';
 import { UserPayload } from '../interfaces/user-payload.interface';
 import { ConfigService } from '@nestjs/config';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -37,6 +38,8 @@ export class AuthGuard implements CanActivate {
         secret: this.configService.get<string>('JWT_SECRET'),
       });
       request['user'].ip_address = request.ip;
+      request['user'].request_id =
+        (request.headers['x-request-id'] as string) || uuidv4();
     } catch {
       throw new UnauthorizedException();
     }

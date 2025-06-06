@@ -27,7 +27,7 @@ export class CreateReimbursementsTable1749165351831
             isNullable: false,
           },
           {
-            name: 'payroll_period_id',
+            name: 'attendance_period_id',
             type: 'bigint',
             isNullable: false,
           },
@@ -78,8 +78,8 @@ export class CreateReimbursementsTable1749165351831
         ],
         indices: [
           new TableIndex({
-            name: 'idx_reimbursements_payroll_period',
-            columnNames: ['payroll_period_id'],
+            name: 'idx_reimbursements_attendance_period',
+            columnNames: ['attendance_period_id'],
           }),
         ],
       }),
@@ -94,8 +94,8 @@ export class CreateReimbursementsTable1749165351831
         onDelete: 'CASCADE',
       }),
       new TableForeignKey({
-        columnNames: ['payroll_period_id'],
-        referencedTableName: 'payroll_periods',
+        columnNames: ['attendance_period_id'],
+        referencedTableName: 'attendance_periods',
         referencedColumnNames: ['id'],
         onDelete: 'CASCADE',
       }),

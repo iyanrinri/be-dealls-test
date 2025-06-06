@@ -1,16 +1,31 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity('attendances')
 export class Attendance {
   @PrimaryGeneratedColumn()
   id: string;
 
-  @Column()
-  userId: string;
+  @Column({ type: 'bigint', name: 'user_id' })
+  userId: number;
 
-  @Column()
-  payrollPeriodId: string;
+  @Column({ type: 'bigint', name: 'attendance_period_id'})
+  attendancePeriodId: number;
 
-  @Column()
-  date: Date;
+  @Column({ type: 'date', name: 'attendance_date' })
+  attendanceDate: Date;
+
+  @Column({ type: 'timestamp with time zone', name: 'clock_in_time' })
+  clockInTime?: Date;
+
+  @Column({ type: 'timestamp with time zone', name: 'clock_out_time' })
+  clockOutTime?: Date;
+
+  @Column({ type: 'bigint', name: 'created_by' })
+  createdBy: number;
+
+  @Column({ type: 'bigint', name: 'updated_by' })
+  updatedBy?: number;
+
+  @Column({ type: 'varchar', name: 'ip_address' })
+  ipAddress?: string;
 }

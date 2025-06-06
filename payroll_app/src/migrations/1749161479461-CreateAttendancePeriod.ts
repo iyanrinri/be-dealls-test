@@ -10,7 +10,7 @@ export class CreatePayrollPeriod1749161479461 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'payroll_periods',
+        name: 'attendance_periods',
         columns: [
           {
             name: 'id',
@@ -86,42 +86,42 @@ export class CreatePayrollPeriod1749161479461 implements MigrationInterface {
     );
 
     await queryRunner.createIndex(
-      'payroll_periods',
+      'attendance_periods',
       new TableIndex({
-        name: 'IDX_payroll_periods_created_by',
+        name: 'IDX_attendance_periods_created_by',
         columnNames: ['created_by'],
       }),
     );
     await queryRunner.createIndex(
-      'payroll_periods',
+      'attendance_periods',
       new TableIndex({
-        name: 'IDX_payroll_periods_updated_by',
+        name: 'IDX_attendance_periods_updated_by',
         columnNames: ['updated_by'],
       }),
     );
     await queryRunner.createIndex(
-      'payroll_periods',
+      'attendance_periods',
       new TableIndex({
-        name: 'IDX_payroll_periods_status',
+        name: 'IDX_attendance_periods_status',
         columnNames: ['status'],
       }),
     );
     await queryRunner.createIndex(
-      'payroll_periods',
+      'attendance_periods',
       new TableIndex({
-        name: 'IDX_payroll_periods_processed_at',
+        name: 'IDX_attendance_periods_processed_at',
         columnNames: ['processed_at'],
       }),
     );
     await queryRunner.createIndex(
-      'payroll_periods',
+      'attendance_periods',
       new TableIndex({
-        name: 'IDX_payroll_periods_date',
+        name: 'IDX_attendance_periods_date',
         columnNames: ['start_date', 'end_date'],
       }),
     );
 
-    await queryRunner.createForeignKeys('payroll_periods', [
+    await queryRunner.createForeignKeys('attendance_periods', [
       new TableForeignKey({
         columnNames: ['created_by'],
         referencedTableName: 'users',
@@ -136,13 +136,13 @@ export class CreatePayrollPeriod1749161479461 implements MigrationInterface {
       }),
     ]);
     await queryRunner.query(`
-        CREATE TRIGGER update_payroll_periods_timestamp
-        BEFORE UPDATE ON payroll_periods
+        CREATE TRIGGER update_attendance_periods_timestamp
+        BEFORE UPDATE ON attendance_periods
         FOR EACH ROW EXECUTE FUNCTION update_timestamp();
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('payroll_periods');
+    await queryRunner.dropTable('attendance_periods');
   }
 }

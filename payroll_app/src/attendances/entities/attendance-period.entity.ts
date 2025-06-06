@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('payroll_periods')
-export class PayrollPeriod {
+@Entity('attendance_periods')
+export class AttendancePeriod {
   @PrimaryGeneratedColumn()
   id: string;
 
@@ -9,11 +9,10 @@ export class PayrollPeriod {
   startDate: Date;
 
   @Column({ type: 'date', name: 'end_date' })
-
   endDate: Date;
 
-  @Column()
-  status: string;
+  @Column({ type: 'varchar', nullable: true })
+  status?: string;
 
   @Column({ type: 'bigint', name: 'created_by' })
   createdBy: number;

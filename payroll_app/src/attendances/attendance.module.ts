@@ -3,12 +3,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AttendanceController } from './attendance.controller';
 import { AttendanceService } from './attendance.service';
 import { Attendance } from './entities/attendance.entity';
-import { PayrollPeriod } from './entities/payroll-period.entity';
+import { AttendancePeriod } from './entities/attendance-period.entity'; // Fixed typo
 import { AuthModule } from '../auth/auth.module';
+import { AuditLogModule } from '../audit-logs/audit-log.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Attendance, PayrollPeriod]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([Attendance, AttendancePeriod]),
+    AuthModule,
+    AuditLogModule, // Provides AuditLogService and AuditLogRepository
+  ],
   controllers: [AttendanceController],
-  providers: [AttendanceService],
+  providers: [AttendanceService], // Removed AuditLogService
 })
 export class AttendanceModule {}

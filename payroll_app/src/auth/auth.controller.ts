@@ -22,7 +22,6 @@ export class AuthController {
   @ApiBody({ type: LoginDto })
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
-    console.log(loginDto);
     const user = await this.authService.validateUser(
       loginDto.username,
       loginDto.password,

@@ -4716,6 +4716,11 @@ nest-winston@^1.10.2:
   dependencies:
     fast-safe-stringify "^2.1.1"
 
+nestjs-cls@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/nestjs-cls/-/nestjs-cls-6.0.1.tgz#13b83cadb7db9885b4fb08cad487ba0605c41303"
+  integrity sha512-FnU8MI5/RKdbNvGmlUMD7nuFs7zUiueNzTjO+sxj7BJbsf7cUmosarppPLXRJ7C1WaZ/gLE9ZAcM6//0q1CQIA==
+
 node-abort-controller@^3.0.1:
   version "3.1.1"
   resolved "https://registry.npmjs.org/node-abort-controller/-/node-abort-controller-3.1.1.tgz"

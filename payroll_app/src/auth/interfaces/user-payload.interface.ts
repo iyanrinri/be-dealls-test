@@ -3,4 +3,5 @@ export interface UserPayload {
   username: string;
   role?: string;
   ip_address?: string;
+  request_id?: string;
 }
