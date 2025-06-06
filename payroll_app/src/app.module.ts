@@ -16,6 +16,7 @@ import * as dotenv from 'dotenv';
 import { Overtime } from './overtime/entities/overtime.entity';
 import { Reimbursement } from './reimbursements/entities/reimbursement.entity';
 import { ReimbursementModule } from './reimbursements/reimbursement.module';
+import { PayrollModule } from './payroll/payroll.module';
 dotenv.config();
 
 @Module({
@@ -35,6 +36,7 @@ dotenv.config();
     AuditLogModule,
     OvertimeModule,
     ReimbursementModule,
+    PayrollModule,
   ],
   controllers: [],
   providers: [AppService],
