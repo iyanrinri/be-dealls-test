@@ -11,7 +11,7 @@ const AppDataSource = new DataSource({
 
   entities: [User],
   migrations: ['src/migrations/*.ts'],
-  migrationsTableName: 'custom_migration_table',
+  migrationsTableName: 'migrations',
 
   synchronize: false,
   logging: true,

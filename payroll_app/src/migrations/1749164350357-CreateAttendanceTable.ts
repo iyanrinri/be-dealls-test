@@ -2,24 +2,15 @@ import {
   MigrationInterface,
   QueryRunner,
   Table,
-  TableIndex,
   TableForeignKey,
+  TableIndex,
 } from 'typeorm';
 
-export class CreateUserTable1749134391018 implements MigrationInterface {
+export class CreateAttendanceTable1749164350357 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-            CREATE OR REPLACE FUNCTION update_timestamp()
-            RETURNS TRIGGER AS $$
-            BEGIN
-                NEW.updated_at = CURRENT_TIMESTAMP;
-                RETURN NEW;
-            END;
-            $$ LANGUAGE plpgsql;
-        `);
     await queryRunner.createTable(
       new Table({
-        name: 'users',
+        name: 'attendances',
         columns: [
           {
             name: 'id',
@@ -29,45 +20,44 @@ export class CreateUserTable1749134391018 implements MigrationInterface {
             generationStrategy: 'increment',
           },
           {
-            name: 'username',
-            type: 'varchar',
-            isUnique: true,
+            name: 'user_id',
+            type: 'bigint',
             isNullable: false,
           },
           {
-            name: 'password',
-            type: 'varchar',
+            name: 'payroll_period_id',
+            type: 'bigint',
             isNullable: false,
           },
           {
-            name: 'salary',
-            type: 'decimal',
-            precision: 10,
-            scale: 2,
+            name: 'attendance_date',
+            type: 'date',
+            isNullable: false,
+          },
+          {
+            name: 'clock_in_time',
+            type: 'timestamp with time zone',
             isNullable: true,
           },
           {
-            name: 'role',
-            type: 'varchar',
-            length: '20',
-            isNullable: false,
-            default: `'employee'`,
-            enum: ['employee', 'admin'],
+            name: 'clock_out_time',
+            type: 'timestamp with time zone',
+            isNullable: true,
           },
           {
             name: 'created_at',
-            type: 'timestamp',
+            type: 'timestamp with time zone',
             default: 'CURRENT_TIMESTAMP',
           },
           {
             name: 'updated_at',
-            type: 'timestamp',
+            type: 'timestamp with time zone',
             default: 'CURRENT_TIMESTAMP',
           },
           {
             name: 'created_by',
             type: 'integer',
-            isNullable: true,
+            isNullable: false,
           },
           {
             name: 'updated_by',
@@ -83,43 +73,41 @@ export class CreateUserTable1749134391018 implements MigrationInterface {
         ],
         uniques: [
           {
-            name: 'UQ_users_username',
-            columnNames: ['username'],
+            name: 'unique_attendance',
+            columnNames: ['user_id', 'attendance_date'],
           },
+        ],
+        indices: [
+          new TableIndex({
+            name: 'idx_attendance_user_date',
+            columnNames: ['user_id', 'attendance_date'],
+          }),
+          new TableIndex({
+            name: 'idx_attendance_clock_in_out',
+            columnNames: ['clock_in_time', 'clock_out_time'],
+          }),
+          new TableIndex({
+            name: 'idx_attendance_payroll_period',
+            columnNames: ['payroll_period_id'],
+          }),
         ],
       }),
       true,
     );
-    await queryRunner.createIndex(
-      'users',
-      new TableIndex({
-        name: 'IDX_USERS_USERNAME',
-        columnNames: ['username'],
-      }),
-    );
-    await queryRunner.createIndex(
-      'users',
-      new TableIndex({
-        name: 'IDX_USERS_ROLE',
-        columnNames: ['role'],
-      }),
-    );
-    await queryRunner.createIndex(
-      'users',
-      new TableIndex({
-        name: 'IDX_USERS_CREATED_BY',
-        columnNames: ['created_by'],
-      }),
-    );
-    await queryRunner.createIndex(
-      'users',
-      new TableIndex({
-        name: 'IDX_USERS_UPDATED_BY',
-        columnNames: ['updated_by'],
-      }),
-    );
 
-    await queryRunner.createForeignKeys('users', [
+    await queryRunner.createForeignKeys('attendances', [
+      new TableForeignKey({
+        columnNames: ['user_id'],
+        referencedTableName: 'users',
+        referencedColumnNames: ['id'],
+        onDelete: 'CASCADE',
+      }),
+      new TableForeignKey({
+        columnNames: ['payroll_period_id'],
+        referencedTableName: 'payroll_periods',
+        referencedColumnNames: ['id'],
+        onDelete: 'CASCADE',
+      }),
       new TableForeignKey({
         columnNames: ['created_by'],
         referencedTableName: 'users',
@@ -134,13 +122,13 @@ export class CreateUserTable1749134391018 implements MigrationInterface {
       }),
     ]);
     await queryRunner.query(`
-        CREATE TRIGGER update_users_timestamp
-        BEFORE UPDATE ON users
+        CREATE TRIGGER update_attendances_timestamp
+        BEFORE UPDATE ON attendances
         FOR EACH ROW EXECUTE FUNCTION update_timestamp();
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('users');
+    await queryRunner.dropTable('attendances');
   }
 }

@@ -6,20 +6,11 @@ import {
   TableForeignKey,
 } from 'typeorm';
 
-export class CreateUserTable1749134391018 implements MigrationInterface {
+export class CreatePayslipTable1749175622399 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-            CREATE OR REPLACE FUNCTION update_timestamp()
-            RETURNS TRIGGER AS $$
-            BEGIN
-                NEW.updated_at = CURRENT_TIMESTAMP;
-                RETURN NEW;
-            END;
-            $$ LANGUAGE plpgsql;
-        `);
     await queryRunner.createTable(
       new Table({
-        name: 'users',
+        name: 'payslips',
         columns: [
           {
             name: 'id',
@@ -29,49 +20,61 @@ export class CreateUserTable1749134391018 implements MigrationInterface {
             generationStrategy: 'increment',
           },
           {
-            name: 'username',
-            type: 'varchar',
-            isUnique: true,
+            name: 'user_id',
+            type: 'integer',
             isNullable: false,
           },
           {
-            name: 'password',
-            type: 'varchar',
+            name: 'payroll_period_id',
+            type: 'integer',
             isNullable: false,
           },
           {
-            name: 'salary',
+            name: 'base_salary',
             type: 'decimal',
             precision: 10,
             scale: 2,
-            isNullable: true,
+            isNullable: false,
           },
           {
-            name: 'role',
-            type: 'varchar',
-            length: '20',
+            name: 'overtime_pay',
+            type: 'decimal',
+            precision: 10,
+            scale: 2,
             isNullable: false,
-            default: `'employee'`,
-            enum: ['employee', 'admin'],
+          },
+          {
+            name: 'reimbursement_total',
+            type: 'decimal',
+            precision: 10,
+            scale: 2,
+            isNullable: false,
+          },
+          {
+            name: 'total_take_home',
+            type: 'decimal',
+            precision: 10,
+            scale: 2,
+            isNullable: false,
           },
           {
             name: 'created_at',
-            type: 'timestamp',
+            type: 'timestamp with time zone',
             default: 'CURRENT_TIMESTAMP',
           },
           {
             name: 'updated_at',
-            type: 'timestamp',
+            type: 'timestamp with time zone',
             default: 'CURRENT_TIMESTAMP',
           },
           {
             name: 'created_by',
-            type: 'integer',
-            isNullable: true,
+            type: 'bigint',
+            isNullable: false,
           },
           {
             name: 'updated_by',
-            type: 'integer',
+            type: 'bigint',
             isNullable: true,
           },
           {
@@ -83,43 +86,33 @@ export class CreateUserTable1749134391018 implements MigrationInterface {
         ],
         uniques: [
           {
-            name: 'UQ_users_username',
-            columnNames: ['username'],
+            name: 'unique_payslip',
+            columnNames: ['user_id', 'payroll_period_id'],
           },
+        ],
+        indices: [
+          new TableIndex({
+            name: 'idx_payslips_user_period',
+            columnNames: ['user_id', 'payroll_period_id'],
+          }),
         ],
       }),
       true,
     );
-    await queryRunner.createIndex(
-      'users',
-      new TableIndex({
-        name: 'IDX_USERS_USERNAME',
-        columnNames: ['username'],
-      }),
-    );
-    await queryRunner.createIndex(
-      'users',
-      new TableIndex({
-        name: 'IDX_USERS_ROLE',
-        columnNames: ['role'],
-      }),
-    );
-    await queryRunner.createIndex(
-      'users',
-      new TableIndex({
-        name: 'IDX_USERS_CREATED_BY',
-        columnNames: ['created_by'],
-      }),
-    );
-    await queryRunner.createIndex(
-      'users',
-      new TableIndex({
-        name: 'IDX_USERS_UPDATED_BY',
-        columnNames: ['updated_by'],
-      }),
-    );
 
-    await queryRunner.createForeignKeys('users', [
+    await queryRunner.createForeignKeys('payslips', [
+      new TableForeignKey({
+        columnNames: ['user_id'],
+        referencedTableName: 'users',
+        referencedColumnNames: ['id'],
+        onDelete: 'CASCADE',
+      }),
+      new TableForeignKey({
+        columnNames: ['payroll_period_id'],
+        referencedTableName: 'payroll_periods',
+        referencedColumnNames: ['id'],
+        onDelete: 'CASCADE',
+      }),
       new TableForeignKey({
         columnNames: ['created_by'],
         referencedTableName: 'users',
@@ -134,13 +127,13 @@ export class CreateUserTable1749134391018 implements MigrationInterface {
       }),
     ]);
     await queryRunner.query(`
-        CREATE TRIGGER update_users_timestamp
-        BEFORE UPDATE ON users
+        CREATE TRIGGER update_payslips_timestamp
+        BEFORE UPDATE ON payslips
         FOR EACH ROW EXECUTE FUNCTION update_timestamp();
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('users');
+    await queryRunner.dropTable('payslips');
   }
 }

@@ -20,7 +20,7 @@ export class User {
   @Column()
   role: 'admin' | 'employee';
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   salary: number;
 
   @CreateDateColumn()
@@ -28,4 +28,13 @@ export class User {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @Column({ type: 'bigint', nullable: true })
+  created_by: number;
+
+  @Column({ type: 'bigint', nullable: true })
+  updated_by: number;
+
+  @Column({ type: 'varchar', nullable: true })
+  ip_address: string;
 }

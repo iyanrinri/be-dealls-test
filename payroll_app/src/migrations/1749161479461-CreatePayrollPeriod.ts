@@ -2,24 +2,15 @@ import {
   MigrationInterface,
   QueryRunner,
   Table,
-  TableIndex,
   TableForeignKey,
+  TableIndex,
 } from 'typeorm';
 
-export class CreateUserTable1749134391018 implements MigrationInterface {
+export class CreatePayrollPeriod1749161479461 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-            CREATE OR REPLACE FUNCTION update_timestamp()
-            RETURNS TRIGGER AS $$
-            BEGIN
-                NEW.updated_at = CURRENT_TIMESTAMP;
-                RETURN NEW;
-            END;
-            $$ LANGUAGE plpgsql;
-        `);
     await queryRunner.createTable(
       new Table({
-        name: 'users',
+        name: 'payroll_periods',
         columns: [
           {
             name: 'id',
@@ -29,30 +20,22 @@ export class CreateUserTable1749134391018 implements MigrationInterface {
             generationStrategy: 'increment',
           },
           {
-            name: 'username',
-            type: 'varchar',
-            isUnique: true,
+            name: 'start_date',
+            type: 'date',
             isNullable: false,
           },
           {
-            name: 'password',
-            type: 'varchar',
+            name: 'end_date',
+            type: 'date',
             isNullable: false,
           },
           {
-            name: 'salary',
-            type: 'decimal',
-            precision: 10,
-            scale: 2,
-            isNullable: true,
-          },
-          {
-            name: 'role',
+            name: 'status',
             type: 'varchar',
             length: '20',
             isNullable: false,
-            default: `'employee'`,
-            enum: ['employee', 'admin'],
+            enum: ['open', 'processed'],
+            default: "'open'",
           },
           {
             name: 'created_at',
@@ -67,7 +50,7 @@ export class CreateUserTable1749134391018 implements MigrationInterface {
           {
             name: 'created_by',
             type: 'integer',
-            isNullable: true,
+            isNullable: false,
           },
           {
             name: 'updated_by',
@@ -80,46 +63,65 @@ export class CreateUserTable1749134391018 implements MigrationInterface {
             length: '45',
             isNullable: true,
           },
+          {
+            name: 'processed_at',
+            type: 'timestamp',
+            isNullable: true,
+          },
+        ],
+        checks: [
+          {
+            name: 'valid_period',
+            expression: 'start_date <= end_date',
+          },
         ],
         uniques: [
           {
-            name: 'UQ_users_username',
-            columnNames: ['username'],
+            name: 'unique_period',
+            columnNames: ['start_date', 'end_date'],
           },
         ],
       }),
       true,
     );
+
     await queryRunner.createIndex(
-      'users',
+      'payroll_periods',
       new TableIndex({
-        name: 'IDX_USERS_USERNAME',
-        columnNames: ['username'],
-      }),
-    );
-    await queryRunner.createIndex(
-      'users',
-      new TableIndex({
-        name: 'IDX_USERS_ROLE',
-        columnNames: ['role'],
-      }),
-    );
-    await queryRunner.createIndex(
-      'users',
-      new TableIndex({
-        name: 'IDX_USERS_CREATED_BY',
+        name: 'IDX_payroll_periods_created_by',
         columnNames: ['created_by'],
       }),
     );
     await queryRunner.createIndex(
-      'users',
+      'payroll_periods',
       new TableIndex({
-        name: 'IDX_USERS_UPDATED_BY',
+        name: 'IDX_payroll_periods_updated_by',
         columnNames: ['updated_by'],
       }),
     );
+    await queryRunner.createIndex(
+      'payroll_periods',
+      new TableIndex({
+        name: 'IDX_payroll_periods_status',
+        columnNames: ['status'],
+      }),
+    );
+    await queryRunner.createIndex(
+      'payroll_periods',
+      new TableIndex({
+        name: 'IDX_payroll_periods_processed_at',
+        columnNames: ['processed_at'],
+      }),
+    );
+    await queryRunner.createIndex(
+      'payroll_periods',
+      new TableIndex({
+        name: 'IDX_payroll_periods_date',
+        columnNames: ['start_date', 'end_date'],
+      }),
+    );
 
-    await queryRunner.createForeignKeys('users', [
+    await queryRunner.createForeignKeys('payroll_periods', [
       new TableForeignKey({
         columnNames: ['created_by'],
         referencedTableName: 'users',
@@ -134,13 +136,13 @@ export class CreateUserTable1749134391018 implements MigrationInterface {
       }),
     ]);
     await queryRunner.query(`
-        CREATE TRIGGER update_users_timestamp
-        BEFORE UPDATE ON users
+        CREATE TRIGGER update_payroll_periods_timestamp
+        BEFORE UPDATE ON payroll_periods
         FOR EACH ROW EXECUTE FUNCTION update_timestamp();
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('users');
+    await queryRunner.dropTable('payroll_periods');
   }
 }
