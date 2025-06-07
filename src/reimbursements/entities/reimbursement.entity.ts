@@ -2,7 +2,10 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('reimbursements')
 export class Reimbursement {
@@ -33,6 +36,7 @@ export class Reimbursement {
   @Column({ type: 'bigint', name: 'updated_by' })
   updatedBy?: number;
 
-  @Column({ type: 'varchar', name: 'ip_address', nullable: true })
-  ipAddress?: string;
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
+  user?: User;
 }

@@ -33,9 +33,8 @@ async function seed() {
     employee.username = `employee${i}`;
     employee.password = await bcrypt.hash('password' + i, 10);
     employee.role = 'employee';
-    employee.salary = Math.floor(Math.random() * 5000000) + 5000000;
+    employee.salary = (Math.floor(Math.random() * 50) + 50) * 100000;
     employee.created_by = admin.id;
-    employee.ip_address = '127.0.0.1';
     await dataSource.manager.save(employee);
 
     const auditLog = new AuditLog();

@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('overtimes')
 export class Overtime {
@@ -29,6 +30,7 @@ export class Overtime {
   @Column({ type: 'bigint', name: 'updated_by' })
   updatedBy?: number;
 
-  @Column({ type: 'varchar', name: 'ip_address', nullable: true })
-  ipAddress?: string;
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
+  user?: User;
 }

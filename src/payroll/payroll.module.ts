@@ -9,6 +9,7 @@ import { Overtime } from '../overtime/entities/overtime.entity';
 import { Reimbursement } from '../reimbursements/entities/reimbursement.entity';
 import { User } from '../users/entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
+import { AuditLogModule } from '../audit-logs/audit-log.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { JwtModule } from '@nestjs/jwt';
       User,
     ]),
     JwtModule.register({}),
+    AuditLogModule,
   ],
   controllers: [PayrollController],
   providers: [PayrollService],

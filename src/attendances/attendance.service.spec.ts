@@ -42,7 +42,7 @@ describe('AttendanceService', () => {
         },
         {
           provide: AuditLogService,
-          useValue: { createAuditLog: jest.fn() },
+          useValue: { logAction: jest.fn(), createAuditLog: jest.fn() },
         },
       ],
     }).compile();
@@ -80,7 +80,6 @@ describe('AttendanceService', () => {
         endDate: new Date(dto.endDate),
         status: 'open',
         createdBy: user.id,
-        ipAddress: user.ip_address,
         updatedBy: user.id,
       };
 
@@ -94,7 +93,6 @@ describe('AttendanceService', () => {
         endDate: dto.endDate,
         status: 'open',
         createdBy: user.id,
-        ipAddress: user.ip_address,
         updatedBy: user.id,
       });
       expect(mockAttendancePeriodRepository.save).toHaveBeenCalledWith(newPeriod);
@@ -139,7 +137,6 @@ describe('AttendanceService', () => {
         endDate: new Date(dto.endDate),
         status: undefined,
         createdBy: user.id,
-        ipAddress: undefined,
         updatedBy: user.id,
       };
 
@@ -153,7 +150,6 @@ describe('AttendanceService', () => {
         endDate: dto.endDate,
         status: 'open',
         createdBy: user.id,
-        ipAddress: undefined,
         updatedBy: user.id,
       });
       expect(mockAttendancePeriodRepository.save).toHaveBeenCalledWith(newPeriod);
@@ -183,7 +179,6 @@ describe('AttendanceService', () => {
       clockInTime: today,
       clockOutTime: undefined,
       createdBy: user.id,
-      ipAddress: user.ip_address,
       updatedBy: user.id,
     };
 
@@ -205,7 +200,6 @@ describe('AttendanceService', () => {
         clockInTime: monday,
         clockOutTime: undefined,
         createdBy: user.id,
-        ipAddress: user.ip_address,
         updatedBy: user.id,
       });
       expect(mockAttendanceRepository.save).toHaveBeenCalledWith(attendance);

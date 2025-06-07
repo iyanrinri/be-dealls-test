@@ -28,7 +28,4 @@ export class AttendancePeriod {
 
   @Column({ type: 'bigint', name: 'updated_by' })
   updatedBy?: number;
-
-  @Column({ type: 'varchar', name: 'ip_address' })
-  ipAddress?: string;
 }

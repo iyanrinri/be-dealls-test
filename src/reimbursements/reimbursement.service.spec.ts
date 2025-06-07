@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Reimbursement } from './entities/reimbursement.entity';
 import { AttendancePeriod } from '../attendances/entities/attendance-period.entity';
 import { Repository } from 'typeorm';
+import { AuditLogService } from '../audit-logs/audit-log.service';
 
 const mockUser = { id: 1, username: 'employee', role: 'employee' };
 const mockReimbursement = {
@@ -15,6 +16,7 @@ const mockReimbursement = {
   updated_at: new Date(),
 };
 const mockPeriod = { id: '1', startDate: new Date(), endDate: new Date() };
+const mockAuditLogService = { logAction: jest.fn() };
 
 describe('ReimbursementService', () => {
   let service: ReimbursementService;
@@ -38,6 +40,7 @@ describe('ReimbursementService', () => {
             findOne: jest.fn().mockResolvedValue(mockPeriod),
           },
         },
+        { provide: AuditLogService, useValue: mockAuditLogService },
       ],
     }).compile();
 
@@ -53,11 +56,5 @@ describe('ReimbursementService', () => {
     expect(repo.create).toHaveBeenCalled();
     expect(repo.save).toHaveBeenCalled();
     expect(result).toEqual(mockReimbursement);
-  });
-});
-
-describe('dummy', () => {
-  it('should pass', () => {
-    expect(true).toBe(true);
   });
 });

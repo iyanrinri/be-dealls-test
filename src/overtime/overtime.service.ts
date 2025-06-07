@@ -10,6 +10,7 @@ import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { UserPayload } from '../auth/interfaces/user-payload.interface';
 import { Attendance } from '../attendances/entities/attendance.entity';
 import { AttendancePeriod } from '../attendances/entities/attendance-period.entity';
+import { AuditLogService } from '../audit-logs/audit-log.service';
 
 @Injectable()
 export class OvertimeService {
@@ -20,6 +21,7 @@ export class OvertimeService {
     private attendanceRepository: Repository<Attendance>,
     @InjectRepository(AttendancePeriod)
     private attendancePeriodRepository: Repository<AttendancePeriod>,
+    private auditLogService: AuditLogService,
   ) {}
 
   async submitOvertime(dto: CreateOvertimeDto, user: UserPayload) {
@@ -86,21 +88,35 @@ export class OvertimeService {
         overtimeDate: overtimeDate,
         hours: dto.hours,
         createdBy: user.id,
-        ipAddress: user.ip_address,
       });
-      return this.overtimeRepository.save(overtime);
+      const savedOvertime = await this.overtimeRepository.save(overtime);
+      await this.auditLogService.logAction(
+        user,
+        'create',
+        'overtimes',
+        savedOvertime.id.toString(),
+        dto
+      );
+      return savedOvertime;
     }
     existingOvertime.hours = dto.hours;
     existingOvertime.updatedBy = user.id;
-    existingOvertime.ipAddress = user.ip_address;
-
-    return this.overtimeRepository.save(existingOvertime);
+    const updatedOvertime = await this.overtimeRepository.save(existingOvertime);
+    await this.auditLogService.logAction(
+      user,
+      'update',
+      'overtimes',
+      updatedOvertime.id.toString(),
+      { hours: dto.hours }
+    );
+    return updatedOvertime;
   }
 
   async listOvertime(
     user: UserPayload,
     attendancePeriodId?: string,
-  ): Promise<Overtime[]> {
+    locale: string = 'en-US',
+  ): Promise<any[]> {
     let periodId = attendancePeriodId;
     if (!periodId) {
       // Get the current period by date
@@ -118,12 +134,32 @@ export class OvertimeService {
       }
       periodId = period.id;
     }
-    return this.overtimeRepository.find({
+    const overtimes = await this.overtimeRepository.find({
       where: {
         userId: user.id,
         attendancePeriodId: periodId ? parseInt(periodId) : undefined,
       },
       order: { overtimeDate: 'ASC' },
+      relations: ['user'],
     });
+    return overtimes.map((o: any) => ({
+      ...o,
+      user: o.user
+        ? {
+            id: o.user.id,
+            username: o.user.username,
+            role: o.user.role,
+          }
+        : undefined,
+      overtimeDateFormatted: o.overtimeDate
+        ? new Date(o.overtimeDate).toLocaleString(locale, {
+            timeZone: 'Asia/Jakarta',
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          })
+        : null,
+    }));
   }
 }

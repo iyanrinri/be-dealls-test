@@ -65,7 +65,4 @@ export class Payslip {
 
   @Column({ type: 'bigint', name: 'updated_by' })
   updatedBy?: number;
-
-  @Column({ type: 'varchar', name: 'ip_address', nullable: true })
-  ipAddress?: string;
 }

@@ -12,6 +12,7 @@ import { Reimbursement } from '../reimbursements/entities/reimbursement.entity';
 import { User } from '../users/entities/user.entity';
 import { UserPayload } from '../auth/interfaces/user-payload.interface';
 import { Attendance } from '../attendances/entities/attendance.entity';
+import { AuditLogService } from '../audit-logs/audit-log.service';
 
 @Injectable()
 export class PayrollService {
@@ -28,6 +29,7 @@ export class PayrollService {
     private userRepo: Repository<User>,
     @InjectRepository(Attendance)
     private attendanceRepo: Repository<Attendance>,
+    private auditLogService: AuditLogService,
   ) {}
 
   async runPayroll(userPayload: UserPayload, attendancePeriodId?: string) {
@@ -111,12 +113,20 @@ export class PayrollService {
           overtimeValue: overtimeValue,
           createdBy: userPayload.id,
           updatedBy: userPayload.id,
-          ipAddress: userPayload.ip_address,
         })
       );
     }
     console.log(payslips);
     await this.payslipRepo.save(payslips);
+    for (const payslip of payslips) {
+      await this.auditLogService.logAction(
+        userPayload,
+        'create',
+        'payslips',
+        payslip.id.toString(),
+        payslip
+      );
+    }
     // Lock the period
     period.status = 'processed';
     period.processedAt = new Date();
@@ -142,7 +152,19 @@ export class PayrollService {
     if (employeeId) {
       where.userId = Number(employeeId);
     }
-    return this.payslipRepo.find({ where });
+    return this.payslipRepo.find({
+      where,
+      relations: ['user'],
+    }).then(payslips => payslips.map(p => ({
+      ...p,
+      user: p.user
+        ? {
+            id: p.user.id,
+            username: p.user.username,
+            role: p.user.role,
+          }
+        : undefined,
+    })));
   }
 
   async getEmployeePayslip(userId: number, attendancePeriodId?: string) {
@@ -161,7 +183,7 @@ export class PayrollService {
     const payslip = await this.payslipRepo.findOne({
       where: { userId: Number(userId), attendancePeriodId: Number(periodId) },
     });
-    if (!payslip) throw new NotFoundException('Payslip not found');
+    if (!payslip) throw new NotFoundException('Admin has not performed payroll for this period, pay slip is not ready yet');
 
     if (process.env.NODE_ENV === 'test') {
       return payslip;
@@ -183,7 +205,7 @@ export class PayrollService {
       attendance: {
         workingDays: payslip.workingDays,
         attendanceCount: payslip.attendanceCount,
-        performanceAttendance: payslip.performanceAttendance,
+        performanceAttendance: payslip.performanceAttendance + "%",
         salaryBaseAttendanceCount: payslip.salaryBaseAttendanceCount,
         attendances: attendances.map(a => ({
           id: a.id,
@@ -244,7 +266,8 @@ export class PayrollService {
       overtimePay: p.overtimePay,
       reimbursementTotal: p.reimbursementTotal,
       attendanceCount: p.attendanceCount,
-      performanceAttendance: p.performanceAttendance,
+      workingDays: p.workingDays,
+      performanceAttendancePercentage: p.performanceAttendance + "%",
     }));
     const totalTakeHome = payslips.reduce((sum, p) => sum + parseFloat(p.totalTakeHome), 0).toFixed(2);
     return {

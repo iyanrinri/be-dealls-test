@@ -34,7 +34,4 @@ export class User {
 
   @Column({ type: 'bigint', nullable: true })
   updated_by: number;
-
-  @Column({ type: 'varchar', nullable: true })
-  ip_address: string;
 }

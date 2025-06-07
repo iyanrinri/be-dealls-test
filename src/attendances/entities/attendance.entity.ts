@@ -1,4 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { AttendancePeriod } from './attendance-period.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('attendances')
 export class Attendance {
@@ -32,6 +34,11 @@ export class Attendance {
   @Column({ type: 'bigint', name: 'updated_by' })
   updatedBy?: number;
 
-  @Column({ type: 'varchar', name: 'ip_address' })
-  ipAddress?: string;
+  @ManyToOne(() => AttendancePeriod)
+  @JoinColumn({ name: 'attendance_period_id' })
+  attendancePeriod?: AttendancePeriod;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
+  user?: User;
 }

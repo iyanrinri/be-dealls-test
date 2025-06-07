@@ -7,7 +7,7 @@ import { AttendancePeriod } from './entities/attendance-period.entity';
 import { CreateAttendancePeriodDto } from './dto/create-attendance-period.dto';
 import { UserPayload } from '../auth/interfaces/user-payload.interface';
 import { AuditLogService } from '../audit-logs/audit-log.service';
-import { CreateAuditLogDto } from '../audit-logs/dto/create-audit-log.dto';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AttendanceService {
@@ -42,22 +42,18 @@ export class AttendanceService {
       endDate: endDate,
       status: 'open',
       createdBy: user.id,
-      ipAddress: user.ip_address || undefined,
       updatedBy: user.id,
     }
     const period = this.attendancePeriodRepository.create(data);
 
     const savedPeriod = await this.attendancePeriodRepository.save(period);
-    const auditLogDto: CreateAuditLogDto = {
-      userId: user.id,
-      requestId: user.request_id || undefined,
-      action: 'create',
-      tableName: 'attendance_periods',
-      recordId: savedPeriod.id.toString(),
-      ipAddress: user.ip_address || undefined,
-      changes: data,
-    };
-    this.auditLogService.createAuditLog(auditLogDto, user);
+    await this.auditLogService.logAction(
+      user,
+      'create',
+      'attendance_periods',
+      savedPeriod.id.toString(),
+      data
+    );
     return period;
   }
 
@@ -111,18 +107,13 @@ export class AttendanceService {
         updated = true;
       }
       if (updated) {
-        const auditLogDto: CreateAuditLogDto = {
-          userId: user.id,
-          requestId: user.request_id || undefined,
-          action: 'update',
-          tableName: 'attendances',
-          recordId: existingAttendance.id.toString(),
-          ipAddress: user.ip_address || undefined,
-          changes: {
-            clockOutTime: attendanceDate,
-          },
-        };
-        this.auditLogService.createAuditLog(auditLogDto, user);
+        await this.auditLogService.logAction(
+          user,
+          'update',
+          'attendances',
+          existingAttendance.id.toString(),
+          { clockOutTime: attendanceDate }
+        );
         return await this.attendanceRepository.save(existingAttendance);
       }
       return existingAttendance;
@@ -135,25 +126,21 @@ export class AttendanceService {
       clockInTime: new Date(),
       clockOutTime: undefined,
       createdBy: user.id,
-      ipAddress: user.ip_address || undefined,
       updatedBy: user.id,
     };
     const attendance = this.attendanceRepository.create(data);
     const savedAttendance = await this.attendanceRepository.save(attendance);
-    const auditLogDto: CreateAuditLogDto = {
-      userId: user.id,
-      requestId: user.request_id || undefined,
-      action: 'create',
-      tableName: 'attendances',
-      recordId: savedAttendance.id.toString(),
-      ipAddress: user.ip_address || undefined,
-      changes: data,
-    };
-    this.auditLogService.createAuditLog(auditLogDto, user);
+    await this.auditLogService.logAction(
+      user,
+      'create',
+      'attendances',
+      savedAttendance.id.toString(),
+      data
+    );
     return savedAttendance;
   }
 
-  async listAttendance(user: UserPayload, attendancePeriodId?: string): Promise<Attendance[]> {
+  async listAttendance(user: UserPayload, attendancePeriodId?: string): Promise<any[]> {
     let periodId = attendancePeriodId;
     if (!periodId) {
       // Get current period by date
@@ -169,13 +156,47 @@ export class AttendanceService {
       }
       periodId = period.id;
     }
-    return this.attendanceRepository.find({
+    const attendances = await this.attendanceRepository.find({
       where: {
         userId: user.id,
         attendancePeriodId: parseInt(periodId),
       },
       order: { attendanceDate: 'ASC' },
+      relations: ['attendancePeriod', 'user'],
     });
+    return attendances.map((a: any) => ({
+      ...a,
+      clockInTimeFormatted: a.clockInTime
+        ? new Date(a.clockInTime).toLocaleString('en-US', {
+            timeZone: 'Asia/Jakarta',
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        : null,
+      clockOutTimeFormatted: a.clockOutTime
+        ? new Date(a.clockOutTime).toLocaleString('en-US', {
+            timeZone: 'Asia/Jakarta',
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        : null,
+      attendancePeriod: a.attendancePeriod || undefined,
+      user: a.user
+        ? {
+            id: a.user.id,
+            username: a.user.username,
+            role: a.user.role,
+          }
+        : undefined,
+    }));
   }
 
   async listAttendancePeriods(): Promise<AttendancePeriod[]> {

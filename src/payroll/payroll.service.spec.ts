@@ -8,6 +8,7 @@ import { Overtime } from '../overtime/entities/overtime.entity';
 import { Reimbursement } from '../reimbursements/entities/reimbursement.entity';
 import { User } from '../users/entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
+import { AuditLogService } from '../audit-logs/audit-log.service';
 
 describe('PayrollService', () => {
   let service: PayrollService;
@@ -26,6 +27,7 @@ describe('PayrollService', () => {
         { provide: getRepositoryToken(Reimbursement), useClass: Repository },
         { provide: getRepositoryToken(User), useClass: Repository },
         { provide: DataSource, useValue: {} },
+        { provide: AuditLogService, useValue: { logAction: jest.fn() } },
       ],
     }).compile();
     service = module.get<PayrollService>(PayrollService);
@@ -47,7 +49,7 @@ describe('PayrollService', () => {
     it('should throw NotFoundException if payslip not found', async () => {
       jest.spyOn(service['periodRepo'], 'findOne').mockResolvedValueOnce({ id: '2' } as any);
       jest.spyOn(service['payslipRepo'], 'findOne').mockResolvedValueOnce(null);
-      await expect(service.getEmployeePayslip(1, '2')).rejects.toThrow('Payslip not found');
+      await expect(service.getEmployeePayslip(1, '2')).rejects.toThrow('Admin has not performed payroll for this period, pay slip is not ready yet');
     });
 
     it('should return payslip if found', async () => {

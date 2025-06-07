@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { OvertimeService } from './overtime.service';
 import { UserPayload } from '../auth/interfaces/user-payload.interface';
+import { AuditLogService } from '../audit-logs/audit-log.service';
 
 const mockOvertimeRepository = {
   find: jest.fn(),
@@ -14,6 +15,7 @@ const mockAttendanceRepository = {
     getRepository: jest.fn(() => ({ findOne: jest.fn() })),
   },
 };
+const mockAuditLogService = { logAction: jest.fn() };
 
 describe('OvertimeService', () => {
   let service: OvertimeService;
@@ -26,6 +28,7 @@ describe('OvertimeService', () => {
         { provide: 'OvertimeRepository', useValue: mockOvertimeRepository },
         { provide: 'AttendanceRepository', useValue: mockAttendanceRepository },
         { provide: 'AttendancePeriodRepository', useValue: { findOne: jest.fn() } },
+        { provide: AuditLogService, useValue: mockAuditLogService },
       ],
     })
       .overrideProvider('OvertimeRepository')
@@ -34,7 +37,6 @@ describe('OvertimeService', () => {
       .useValue(mockAttendanceRepository)
       .compile();
     service = module.get<OvertimeService>(OvertimeService);
-    // Patch repositories
     (service as any).overtimeRepository = mockOvertimeRepository;
     (service as any).attendanceRepository = mockAttendanceRepository;
   });
@@ -44,13 +46,14 @@ describe('OvertimeService', () => {
       const user: UserPayload = { id: 1, username: 'employee', role: 'employee' };
       const periodId = '2';
       const expectedList = [
-        { id: 1, userId: 1, attendancePeriodId: 2, overtimeDate: new Date(), hours: 2 },
+        { id: 1, userId: 1, attendancePeriodId: 2, overtimeDate: new Date(), hours: 2, overtimeDateFormatted: expect.any(String), user: undefined },
       ];
       mockOvertimeRepository.find.mockResolvedValue(expectedList);
       const result = await service.listOvertime(user, periodId);
       expect(mockOvertimeRepository.find).toHaveBeenCalledWith({
         where: { userId: user.id, attendancePeriodId: parseInt(periodId) },
         order: { overtimeDate: 'ASC' },
+        relations: ['user'],
       });
       expect(result).toEqual(expectedList);
     });
