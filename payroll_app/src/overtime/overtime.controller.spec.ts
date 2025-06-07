@@ -74,4 +74,40 @@ describe('OvertimeController', () => {
       expect(result).toEqual({ message: 'Unauthorized' });
     });
   });
+
+  describe('listOvertime', () => {
+    it('should return overtime list for current user', async () => {
+      const user: UserPayload = {
+        id: 4,
+        username: 'employee2',
+        role: 'employee',
+        ip_address: '127.0.0.4',
+      };
+      const attendancePeriodId = '7';
+      const mockRequest = { user };
+      const expectedList = [
+        {
+          id: 101,
+          userId: user.id,
+          attendancePeriodId: 7,
+          overtimeDate: new Date('2025-06-07'),
+          hours: 2,
+          createdBy: user.id,
+          ipAddress: user.ip_address,
+        },
+      ];
+      overtimeService.listOvertime = jest.fn().mockResolvedValue(expectedList);
+      const result = await controller.listOvertime(mockRequest as any, attendancePeriodId);
+      expect(overtimeService.listOvertime).toHaveBeenCalledWith(user, attendancePeriodId);
+      expect(result).toEqual(expectedList);
+    });
+
+    it('should return unauthorized message if no user in request', async () => {
+      const mockRequest = { user: null };
+      overtimeService.listOvertime = jest.fn();
+      const result = await controller.listOvertime(mockRequest as any, '7');
+      expect(overtimeService.listOvertime).not.toHaveBeenCalled();
+      expect(result).toEqual({ message: 'Unauthorized' });
+    });
+  });
 });

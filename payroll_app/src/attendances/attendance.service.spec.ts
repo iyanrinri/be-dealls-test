@@ -163,24 +163,84 @@ describe('AttendanceService', () => {
     });
   });
 
-  // Uncomment below if you implement the submitAttendance method
-  /*
   describe('submitAttendance', () => {
+    const user: UserPayload = {
+      id: 2,
+      username: 'employee',
+      role: 'employee',
+      ip_address: '127.0.0.2',
+    };
+    const period = {
+      id: '1',
+      startDate: new Date('2025-06-01'),
+      endDate: new Date('2025-06-30'),
+      status: 'open',
+    };
+    const today = new Date();
+    const attendance = {
+      id: 10,
+      userId: user.id,
+      attendancePeriodId: parseInt(period.id),
+      attendanceDate: today,
+      clockInTime: today,
+      clockOutTime: undefined,
+      createdBy: user.id,
+      ipAddress: user.ip_address,
+      updatedBy: user.id,
+    };
+
     it('should submit a new attendance successfully', async () => {
-      // Test for submitAttendance method
+      mockAttendancePeriodRepository.findOne.mockResolvedValue(period);
+      mockAttendanceRepository.findOne.mockResolvedValue(undefined);
+      mockAttendanceRepository.create.mockReturnValue(attendance);
+      mockAttendanceRepository.save.mockResolvedValue(attendance);
+
+      const result = await service.submitAttendance(user);
+
+      expect(mockAttendancePeriodRepository.findOne).toHaveBeenCalled();
+      expect(mockAttendanceRepository.findOne).toHaveBeenCalled();
+      expect(mockAttendanceRepository.create).toHaveBeenCalledWith({
+        userId: user.id,
+        attendancePeriodId: parseInt(period.id),
+        attendanceDate: expect.any(Date),
+        clockInTime: expect.any(Date),
+        clockOutTime: undefined,
+        createdBy: user.id,
+        ipAddress: user.ip_address,
+        updatedBy: user.id,
+      });
+      expect(mockAttendanceRepository.save).toHaveBeenCalledWith(attendance);
+      expect(result).toEqual(attendance);
     });
 
     it('should throw BadRequestException if attendance period does not exist', async () => {
-      // Test for invalid attendance period
+      mockAttendancePeriodRepository.findOne.mockResolvedValue(undefined);
+      await expect(service.submitAttendance(user)).rejects.toThrow(BadRequestException);
+      expect(mockAttendanceRepository.create).not.toHaveBeenCalled();
+      expect(mockAttendanceRepository.save).not.toHaveBeenCalled();
     });
 
     it('should throw BadRequestException if attendance date is outside attendance period', async () => {
-      // Test for date outside period
+      const periodOut = { ...period, startDate: new Date('2025-06-01'), endDate: new Date('2025-06-05') };
+      mockAttendancePeriodRepository.findOne.mockResolvedValue(periodOut);
+      await expect(service.submitAttendance(user)).rejects.toThrow(BadRequestException);
+      expect(mockAttendanceRepository.create).not.toHaveBeenCalled();
+      expect(mockAttendanceRepository.save).not.toHaveBeenCalled();
     });
 
     it('should return existing attendance if already submitted for the same day', async () => {
-      // Test for duplicate submission
+      // Set both clockInTime and clockOutTime to simulate a fully submitted attendance
+      const submittedAttendance = {
+        ...attendance,
+        clockInTime: today,
+        clockOutTime: today, // not undefined
+      };
+      mockAttendancePeriodRepository.findOne.mockResolvedValue(period);
+      mockAttendanceRepository.findOne.mockResolvedValue(submittedAttendance);
+      const result = await service.submitAttendance(user);
+      expect(mockAttendanceRepository.create).not.toHaveBeenCalled();
+      expect(mockAttendanceRepository.save).not.toHaveBeenCalled();
+      expect(result).toEqual(submittedAttendance);
     });
   });
-  */
 });

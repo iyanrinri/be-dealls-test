@@ -114,27 +114,36 @@ export class AttendanceService {
       },
     });
 
-    let clockOutTime: Date | undefined = undefined;
     if (existingAttendance) {
+      // If both clockInTime and clockOutTime are already set, just return
+      if (existingAttendance.clockInTime && existingAttendance.clockOutTime) {
+        return existingAttendance;
+      }
+      let updated = false;
       if (!existingAttendance.clockInTime) {
         existingAttendance.clockInTime = attendanceDate;
+        updated = true;
       } else if (!existingAttendance.clockOutTime) {
-        clockOutTime = attendanceDate;
-        existingAttendance.clockOutTime = clockOutTime;
+        existingAttendance.clockOutTime = attendanceDate;
+        updated = true;
       }
-      const auditLogDto: CreateAuditLogDto = {
-        userId: user.id,
-        requestId: user.request_id || undefined,
-        action: 'update',
-        tableName: 'attendances',
-        recordId: existingAttendance.id.toString(),
-        ipAddress: user.ip_address || undefined,
-        changes: {
-          clockOutTime: attendanceDate,
-        },
-      };
-      this.auditLogService.createAuditLog(auditLogDto, user);
-      return await this.attendanceRepository.save(existingAttendance);
+      if (updated) {
+        const auditLogDto: CreateAuditLogDto = {
+          userId: user.id,
+          requestId: user.request_id || undefined,
+          action: 'update',
+          tableName: 'attendances',
+          recordId: existingAttendance.id.toString(),
+          ipAddress: user.ip_address || undefined,
+          changes: {
+            clockOutTime: attendanceDate,
+          },
+        };
+        this.auditLogService.createAuditLog(auditLogDto, user);
+        return await this.attendanceRepository.save(existingAttendance);
+      }
+      // If not updated, just return
+      return existingAttendance;
     }
 
     const attendance = this.attendanceRepository.create({
@@ -162,5 +171,30 @@ export class AttendanceService {
     };
     this.auditLogService.createAuditLog(auditLogDto, user);
     return savedAttendance;
+  }
+
+  async listAttendance(user: UserPayload, attendancePeriodId?: string): Promise<Attendance[]> {
+    let periodId = attendancePeriodId;
+    if (!periodId) {
+      // Get current period by date
+      const today = new Date();
+      const period = await this.attendancePeriodRepository.findOne({
+        where: {
+          startDate: LessThanOrEqual(today),
+          endDate: MoreThanOrEqual(today),
+        },
+      });
+      if (!period) {
+        throw new BadRequestException('No attendance period found for today');
+      }
+      periodId = period.id;
+    }
+    return this.attendanceRepository.find({
+      where: {
+        userId: user.id,
+        attendancePeriodId: parseInt(periodId),
+      },
+      order: { attendanceDate: 'ASC' },
+    });
   }
 }

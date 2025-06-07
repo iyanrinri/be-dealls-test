@@ -1,7 +1,7 @@
-import { Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards, Get, Query } from '@nestjs/common';
 import { OvertimeService } from './overtime.service';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthGuard } from '../auth/guards/auth.guard';
 
@@ -21,5 +21,25 @@ export class OvertimeController {
       return { message: 'Unauthorized' };
     }
     return this.overtimeService.submitOvertime(dto, reqUser);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('list')
+  @ApiBearerAuth()
+  @ApiQuery({
+    name: 'attendancePeriodId',
+    type: String,
+    required: false,
+    description: 'The ID of the attendance period (optional)',
+  })
+  async listOvertime(
+    @Req() request: Request,
+    @Query('attendancePeriodId') attendancePeriodId?: string,
+  ) {
+    const reqUser = request.user ? request.user : null;
+    if (!reqUser) {
+      return { message: 'Unauthorized' };
+    }
+    return this.overtimeService.listOvertime(reqUser, attendancePeriodId);
   }
 }

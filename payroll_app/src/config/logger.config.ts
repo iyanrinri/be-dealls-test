@@ -21,7 +21,7 @@ const excludeNestSystemLogs = winston.format((info) => {
     'Nest application successfully started',
   ];
 
-  const message = String(info.message); // 💡 cast ke string
+  const message = String(info.message);
 
   for (const msg of ignoredMessages) {
     if (message.includes(msg)) {

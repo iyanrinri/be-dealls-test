@@ -10,6 +10,7 @@ import { AttendancePeriod } from '../attendances/entities/attendance-period.enti
 import { Overtime } from '../overtime/entities/overtime.entity';
 import { Reimbursement } from '../reimbursements/entities/reimbursement.entity';
 import { User } from '../users/entities/user.entity';
+import { UserPayload } from '../auth/interfaces/user-payload.interface';
 
 @Injectable()
 export class PayrollService {
@@ -26,7 +27,7 @@ export class PayrollService {
     private userRepo: Repository<User>,
   ) {}
 
-  async runPayroll(attendancePeriodId?: string) {
+  async runPayroll(userPayload: UserPayload, attendancePeriodId?: string) {
     let period: AttendancePeriod | null;
     if (!attendancePeriodId) {
       const today = new Date();
@@ -48,11 +49,12 @@ export class PayrollService {
     const users = await this.userRepo
       .createQueryBuilder('user')
       .innerJoin('attendances', 'a', 'a.user_id = user.id AND a.attendance_period_id = :periodId', { periodId: attendancePeriodId })
+      .where('user.role = :role', { role: 'employee' })
       .getMany();
 
     const payslips: Payslip[] = [];
     for (const user of users) {
-      // Calculate base salary (from user.salary)
+      // Calculate base salary
       const baseSalary = user.salary ? Number(user.salary).toFixed(2) : '0.00';
       // Overtime
       const overtime = await this.overtimeRepo
@@ -77,13 +79,18 @@ export class PayrollService {
           baseSalary,
           overtimePay,
           reimbursementTotal,
-          total,
+          totalTakeHome: total,
+          createdBy: userPayload.id,
+          updatedBy: userPayload.id,
+          ipAddress: userPayload.ip_address,
         })
       );
     }
     await this.payslipRepo.save(payslips);
     // Lock the period
     period.status = 'processed';
+    period.processedAt = new Date();
+    period.updatedBy = userPayload.id;
     await this.periodRepo.save(period);
     return payslips;
   }

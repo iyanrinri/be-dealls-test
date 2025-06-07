@@ -22,8 +22,8 @@ export class Payslip {
   @Column({ name: 'reimbursement_total', type: 'decimal', precision: 10, scale: 2 })
   reimbursementTotal: string;
 
-  @Column({ name: 'total', type: 'decimal', precision: 10, scale: 2 })
-  total: string;
+  @Column({ name: 'total_take_home', type: 'decimal', precision: 10, scale: 2 })
+  totalTakeHome: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
@@ -32,4 +32,13 @@ export class Payslip {
   @ManyToOne(() => AttendancePeriod)
   @JoinColumn({ name: 'attendance_period_id' })
   attendancePeriod: AttendancePeriod;
+
+  @Column({ type: 'bigint', name: 'created_by' })
+  createdBy?: number;
+
+  @Column({ type: 'bigint', name: 'updated_by' })
+  updatedBy?: number;
+
+  @Column({ type: 'varchar', name: 'ip_address', nullable: true })
+  ipAddress?: string;
 }

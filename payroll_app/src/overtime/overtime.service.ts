@@ -4,7 +4,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { Overtime } from './entities/overtime.entity';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { UserPayload } from '../auth/interfaces/user-payload.interface';
@@ -75,5 +75,35 @@ export class OvertimeService {
     existingOvertime.ipAddress = user.ip_address;
 
     return this.overtimeRepository.save(existingOvertime);
+  }
+
+  async listOvertime(
+    user: UserPayload,
+    attendancePeriodId?: string,
+  ): Promise<Overtime[]> {
+    let periodId = attendancePeriodId;
+    if (!periodId) {
+      // Get current period by date
+      const today = new Date();
+      const period = await this.attendanceRepository.manager
+        .getRepository('AttendancePeriod')
+        .findOne({
+          where: {
+            startDate: LessThanOrEqual(today),
+            endDate: MoreThanOrEqual(today),
+          },
+        });
+      if (!period) {
+        throw new BadRequestException('No attendance period found for today');
+      }
+      periodId = period.id;
+    }
+    return this.overtimeRepository.find({
+      where: {
+        userId: user.id,
+        attendancePeriodId: periodId ? parseInt(periodId) : undefined,
+      },
+      order: { overtimeDate: 'ASC' },
+    });
   }
 }

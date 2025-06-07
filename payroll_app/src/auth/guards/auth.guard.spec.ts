@@ -93,7 +93,6 @@ describe('AuthGuard', () => {
       
       expect(await guard.canActivate(context)).toBe(true);
       expect(jwtService.verifyAsync).toHaveBeenCalledWith(token, expect.any(Object));
-      // Add more assertions to check if the user is attached to the request
     });
   });
 });

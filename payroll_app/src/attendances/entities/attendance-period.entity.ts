@@ -14,6 +14,9 @@ export class AttendancePeriod {
   @Column({ type: 'varchar', nullable: true })
   status?: string;
 
+  @Column({ type: 'timestamp with time zone', name: 'processed_at' })
+  processedAt: Date;
+
   @Column({ type: 'bigint', name: 'created_by' })
   createdBy: number;
 

@@ -12,6 +12,7 @@ describe('AttendanceController', () => {
   const mockAttendanceService = {
     createAttendancePeriod: jest.fn(),
     submitAttendance: jest.fn(),
+    listAttendance: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -124,6 +125,44 @@ describe('AttendanceController', () => {
       mockAttendanceService.submitAttendance = jest.fn();
       const result = await controller.submitAttendance(mockRequest as any);
       expect(mockAttendanceService.submitAttendance).not.toHaveBeenCalled();
+      expect(result).toEqual({ message: 'Unauthorized' });
+    });
+  });
+
+  describe('listAttendance', () => {
+    it('should return attendance list for current user', async () => {
+      const user: UserPayload = {
+        id: 3,
+        username: 'employee',
+        role: 'employee',
+        ip_address: '127.0.0.3',
+      };
+      const mockRequest = { user };
+      const attendancePeriodId = '5';
+      const expectedList = [
+        {
+          id: 100,
+          userId: user.id,
+          attendancePeriodId: 5,
+          attendanceDate: new Date('2025-06-07'),
+          clockInTime: new Date('2025-06-07T08:00:00Z'),
+          clockOutTime: new Date('2025-06-07T17:00:00Z'),
+          createdBy: user.id,
+          ipAddress: user.ip_address,
+          updatedBy: user.id,
+        },
+      ];
+      mockAttendanceService.listAttendance = jest.fn().mockResolvedValue(expectedList);
+      const result = await controller.listAttendance(mockRequest as any, attendancePeriodId);
+      expect(mockAttendanceService.listAttendance).toHaveBeenCalledWith(user, attendancePeriodId);
+      expect(result).toEqual(expectedList);
+    });
+
+    it('should return unauthorized message if no user in request', async () => {
+      const mockRequest = { user: null };
+      mockAttendanceService.listAttendance = jest.fn();
+      const result = await controller.listAttendance(mockRequest as any, '5');
+      expect(mockAttendanceService.listAttendance).not.toHaveBeenCalled();
       expect(result).toEqual({ message: 'Unauthorized' });
     });
   });

@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AttendanceController } from './attendance.controller';
 import { AttendanceService } from './attendance.service';
 import { Attendance } from './entities/attendance.entity';
-import { AttendancePeriod } from './entities/attendance-period.entity'; // Fixed typo
+import { AttendancePeriod } from './entities/attendance-period.entity';
 import { AuthModule } from '../auth/auth.module';
 import { AuditLogModule } from '../audit-logs/audit-log.module';
 

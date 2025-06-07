@@ -40,7 +40,6 @@ describe('ReimbursementController', () => {
 
   it('should create a reimbursement', async () => {
     const dto = { amount: 100000, description: 'Transport' };
-    // Mock only the user property needed by controller
     const req = { user: mockUser } as unknown as Request;
     const result = await controller.create(dto, req);
     expect(result).toEqual(mockReimbursement);
