@@ -15,7 +15,7 @@ services:
 
   payroll_app:
     build:
-      context: payroll_app
+      context: .
       dockerfile: Dockerfile
       args:
         NODE_ENV: ${NODE_ENV:-development}
@@ -24,7 +24,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./payroll_app:/usr/src/app
+      - .:/usr/src/app
     environment:
       DB_HOST: ${DB_HOST:-postgres}
       DB_PORT: 5432

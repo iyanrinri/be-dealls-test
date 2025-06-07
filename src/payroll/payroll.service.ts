@@ -94,4 +94,24 @@ export class PayrollService {
     await this.periodRepo.save(period);
     return payslips;
   }
+
+  async listPayroll({ attendancePeriodId, employeeId }: { attendancePeriodId?: string, employeeId?: string }) {
+    let periodId = attendancePeriodId;
+    if (!periodId) {
+      const today = new Date();
+      const period = await this.periodRepo.findOne({
+        where: {
+          startDate: LessThanOrEqual(today),
+          endDate: MoreThanOrEqual(today),
+        },
+      });
+      if (!period) throw new NotFoundException('Attendance period not found');
+      periodId = period.id;
+    }
+    const where: any = { attendancePeriodId: Number(periodId) };
+    if (employeeId) {
+      where.userId = Number(employeeId);
+    }
+    return this.payslipRepo.find({ where });
+  }
 }

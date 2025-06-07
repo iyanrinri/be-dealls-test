@@ -5,7 +5,8 @@ This is a sample NestJS backend project using PostgreSQL as the database, contai
 ## Prerequisites
 
 - Docker & Docker Compose installed
-- Node.js & npm (for local development, optional)
+- Node.js & npm or yarn
+ (for local development, optional)
 
 ## Setup and Run (Docker)
 
@@ -34,18 +35,12 @@ NODE_ENV=production docker-compose up -d --build
  docker exec be-dealls-test-payroll_app-1 npm test
 ```
 
-
 ## Setup and Run (Node.js)
-
-```bash
-## move to the project directory
-cd payroll_app
-```
 
 ### Install Dependencies
 
 ```bash
-npm install
+npm install ## or yarn install
 ```
 
 ### Configure Environment Variables
@@ -83,4 +78,4 @@ Swagger UI will be available at http://localhost:3000/api
 
 PostgreSQL listens on port 5432
 
-Uses `.env` file in `payroll_app/` for config development
+Uses `.env` file for config development

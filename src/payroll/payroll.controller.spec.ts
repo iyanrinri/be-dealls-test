@@ -63,4 +63,38 @@ describe('PayrollController', () => {
       await expect(controller.runPayroll(req, dto)).rejects.toThrow('error');
     });
   });
+
+  describe('listPayroll', () => {
+    it('should return unauthorized if user is not present', async () => {
+      const req: any = { user: null };
+      const result = await controller.listPayroll(req, undefined, undefined);
+      expect(result).toEqual({ message: 'Unauthorized' });
+    });
+
+    it('should call payrollService.listPayroll and return result', async () => {
+      const req: any = { user: { id: 1 } };
+      const mockResult = [{ id: 1, userId: 1, attendancePeriodId: 2 }];
+      payrollService.listPayroll = jest.fn().mockResolvedValueOnce(mockResult);
+      const result = await controller.listPayroll(req, '2', '1');
+      expect(payrollService.listPayroll).toHaveBeenCalledWith({ attendancePeriodId: '2', employeeId: '1' });
+      expect(result).toEqual({ message: 'Payroll list', result: mockResult });
+    });
+
+    it('should call payrollService.listPayroll with today if attendancePeriodId is not provided', async () => {
+      const req: any = { user: { id: 1 } };
+      const mockResult = [{ id: 1, userId: 1, attendancePeriodId: 2 }];
+      payrollService.listPayroll = jest.fn().mockResolvedValueOnce(mockResult);
+      const result = await controller.listPayroll(req, undefined, undefined);
+      expect(payrollService.listPayroll).toHaveBeenCalledWith({ attendancePeriodId: undefined, employeeId: undefined });
+      expect(result).toEqual({ message: 'Payroll list', result: mockResult });
+    });
+
+    it('should throw HttpException on error', async () => {
+      const req: any = { user: { id: 1 } };
+      const error = new HttpException('error', 500);
+      payrollService.listPayroll = jest.fn().mockRejectedValue(error);
+      await expect(controller.listPayroll(req, '2', '1')).rejects.toThrow(HttpException);
+      await expect(controller.listPayroll(req, '2', '1')).rejects.toThrow('error');
+    });
+  });
 });
