@@ -103,7 +103,7 @@ export class OvertimeService {
   ): Promise<Overtime[]> {
     let periodId = attendancePeriodId;
     if (!periodId) {
-      // Get current period by date
+      // Get the current period by date
       const today = new Date();
       const period = await this.attendanceRepository.manager
         .getRepository('AttendancePeriod')

@@ -18,6 +18,7 @@ import { Reimbursement } from './reimbursements/entities/reimbursement.entity';
 import { ReimbursementModule } from './reimbursements/reimbursement.module';
 import { PayrollModule } from './payroll/payroll.module';
 import { Payslip } from './payroll/entities/payslip.entity';
+import { UsersModule } from './users/user.module';
 dotenv.config();
 
 @Module({
@@ -38,6 +39,7 @@ dotenv.config();
     OvertimeModule,
     ReimbursementModule,
     PayrollModule,
+    UsersModule,
   ],
   controllers: [],
   providers: [AppService],

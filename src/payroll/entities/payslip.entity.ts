@@ -25,6 +25,27 @@ export class Payslip {
   @Column({ name: 'total_take_home', type: 'decimal', precision: 10, scale: 2 })
   totalTakeHome: string;
 
+  @Column({ name: 'working_days', type: 'integer', nullable: true })
+  workingDays?: number;
+
+  @Column({ name: 'salary_per_hour', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  salaryPerHour?: string;
+
+  @Column({ name: 'attendance_count', type: 'integer', nullable: true })
+  attendanceCount?: number;
+
+  @Column({ name: 'overtime_unit_percentage', type: 'float', nullable: true })
+  overtimeUnitPercentage?: number;
+
+  @Column({ name: 'overtime_value', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  overtimeValue?: string;
+
+  @Column({ name: 'salary_base_attendance_count', type:  'decimal', precision: 10, scale: 2, nullable: true })
+  salaryBaseAttendanceCount?: string;
+
+  @Column({ name: 'performance_attendance', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  performanceAttendance?: string;
+
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
   user: User;

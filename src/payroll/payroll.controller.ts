@@ -28,7 +28,8 @@ export class PayrollController {
       if (!reqUser) {
         return { message: 'Unauthorized' };
       }
-      const result = await this.payrollService.runPayroll(reqUser, dto.attendancePeriodId?.toString());
+      const attendancePeriodId = dto.attendancePeriodId ? dto.attendancePeriodId.toString() : undefined;
+      const result = await this.payrollService.runPayroll(reqUser, attendancePeriodId);
       return { message: 'Payroll processed', result };
     } catch (e) {
       throw new HttpException(e.message, e.status || HttpStatus.BAD_REQUEST);
@@ -62,6 +63,68 @@ export class PayrollController {
       }
       const result = await this.payrollService.listPayroll({ attendancePeriodId, employeeId });
       return { message: 'Payroll list', result };
+    } catch (e) {
+      throw new HttpException(e.message, e.status || HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Get('payslips')
+  @ApiBearerAuth()
+  @ApiQuery({
+    name: 'attendancePeriodId',
+    type: String,
+    required: false,
+    description: 'The ID of the attendance period (optional)',
+  })
+  async getMyPayslip(
+    @Req() request: Request,
+    @Query('attendancePeriodId') attendancePeriodId?: string
+  ) {
+    try {
+      const reqUser = request.user ? request.user : null;
+      if (!reqUser) {
+        return { message: 'Unauthorized' };
+      }
+      if (reqUser.role !== 'employee') {
+        return { message: 'Forbidden' };
+      }
+      const result = await this.payrollService.getEmployeePayslip(reqUser.id, attendancePeriodId);
+      return {
+        message: 'Payslip breakdown',
+        result, // restore for test compatibility
+      };
+    } catch (e) {
+      throw new HttpException(e.message, e.status || HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @UseGuards(AdminGuard)
+  @ApiBearerAuth()
+  @Get('summary')
+  @ApiQuery({
+    name: 'attendancePeriodId',
+    type: String,
+    required: false,
+    description: 'The ID of the attendance period (optional)',
+  })
+  async getPayslipSummary(
+    @Req() request: Request,
+    @Query('attendancePeriodId') attendancePeriodId?: string
+  ) {
+    try {
+      const reqUser = request.user ? request.user : null;
+      if (!reqUser) {
+        return { message: 'Unauthorized' };
+      }
+      // Only admin can access
+      if (reqUser.role !== 'admin') {
+        return { message: 'Forbidden' };
+      }
+      const result = await this.payrollService.getPayslipSummary(attendancePeriodId);
+      return {
+        message: 'Payslip summary',
+        data: result
+      };
     } catch (e) {
       throw new HttpException(e.message, e.status || HttpStatus.BAD_REQUEST);
     }

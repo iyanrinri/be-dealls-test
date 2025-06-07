@@ -97,4 +97,35 @@ describe('PayrollController', () => {
       await expect(controller.listPayroll(req, '2', '1')).rejects.toThrow('error');
     });
   });
+
+  describe('getMyPayslip', () => {
+    it('should return unauthorized if user is not present', async () => {
+      const req: any = { user: null };
+      const result = await controller.getMyPayslip(req, undefined);
+      expect(result).toEqual({ message: 'Unauthorized' });
+    });
+
+    it('should return forbidden if user is not employee', async () => {
+      const req: any = { user: { id: 1, role: 'admin' } };
+      const result = await controller.getMyPayslip(req, undefined);
+      expect(result).toEqual({ message: 'Forbidden' });
+    });
+
+    it('should call payrollService.getEmployeePayslip and return result', async () => {
+      const req: any = { user: { id: 2, role: 'employee' } };
+      const mockResult = { id: 1, userId: 2, attendancePeriodId: 3 };
+      payrollService.getEmployeePayslip = jest.fn().mockResolvedValueOnce(mockResult);
+      const result = await controller.getMyPayslip(req, '3');
+      expect(payrollService.getEmployeePayslip).toHaveBeenCalledWith(2, '3');
+      expect(result).toEqual({ message: 'Payslip breakdown', result: mockResult });
+    });
+
+    it('should throw HttpException on error', async () => {
+      const req: any = { user: { id: 2, role: 'employee' } };
+      const error = new HttpException('error', 500);
+      payrollService.getEmployeePayslip = jest.fn().mockRejectedValue(error);
+      await expect(controller.getMyPayslip(req, '3')).rejects.toThrow(HttpException);
+      await expect(controller.getMyPayslip(req, '3')).rejects.toThrow('error');
+    });
+  });
 });

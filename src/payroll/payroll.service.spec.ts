@@ -38,5 +38,24 @@ describe('PayrollService', () => {
     expect(service).toBeDefined();
   });
 
-  // Add more unit tests for runPayroll logic (mocking repo methods)
+  describe('getEmployeePayslip', () => {
+    it('should throw NotFoundException if period not found', async () => {
+      jest.spyOn(service['periodRepo'], 'findOne').mockResolvedValueOnce(null);
+      await expect(service.getEmployeePayslip(1, undefined)).rejects.toThrow('Attendance period not found');
+    });
+
+    it('should throw NotFoundException if payslip not found', async () => {
+      jest.spyOn(service['periodRepo'], 'findOne').mockResolvedValueOnce({ id: '2' } as any);
+      jest.spyOn(service['payslipRepo'], 'findOne').mockResolvedValueOnce(null);
+      await expect(service.getEmployeePayslip(1, '2')).rejects.toThrow('Payslip not found');
+    });
+
+    it('should return payslip if found', async () => {
+      jest.spyOn(service['periodRepo'], 'findOne').mockResolvedValueOnce({ id: '2' } as any);
+      const payslip = { id: 1, userId: 1, attendancePeriodId: 2 };
+      jest.spyOn(service['payslipRepo'], 'findOne').mockResolvedValueOnce(payslip as any);
+      const result = await service.getEmployeePayslip(1, '2');
+      expect(result).toEqual(payslip);
+    });
+  });
 });

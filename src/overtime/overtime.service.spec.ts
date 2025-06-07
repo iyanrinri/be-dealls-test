@@ -25,6 +25,7 @@ describe('OvertimeService', () => {
         OvertimeService,
         { provide: 'OvertimeRepository', useValue: mockOvertimeRepository },
         { provide: 'AttendanceRepository', useValue: mockAttendanceRepository },
+        { provide: 'AttendancePeriodRepository', useValue: { findOne: jest.fn() } },
       ],
     })
       .overrideProvider('OvertimeRepository')
