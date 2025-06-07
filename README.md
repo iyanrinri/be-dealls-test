@@ -72,6 +72,19 @@ npm run start:prod # for production
 
 ---
 
+## Credentials (After Migration & Seed)
+After running migration and seed, you can log in with the following credentials:
+
+- **Admin**
+  - Username: `admin`
+  - Password: `admin123`
+
+- **Employee**
+  - Username: `employee1` to `employee100`
+  - Password: `password1` to `password100`
+
+---
+
 ## Testing
 - **Docker:**
   ```bash
@@ -104,7 +117,6 @@ npm run start:prod # for production
  - `users/`: User management
  - `common/`: Shared decorators, interceptors
  - `config/`: Logger & Swagger config
-- **test/**: End-to-end and integration tests (see `test/` for e2e specs and integration coverage)
 - **migrations/**: TypeORM migration scripts
 - **docker-compose.yml**: Multi-container orchestration
 - **Dockerfile**: Multi-stage build for dev/prod
