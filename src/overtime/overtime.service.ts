@@ -9,6 +9,7 @@ import { Overtime } from './entities/overtime.entity';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { UserPayload } from '../auth/interfaces/user-payload.interface';
 import { Attendance } from '../attendances/entities/attendance.entity';
+import { AttendancePeriod } from '../attendances/entities/attendance-period.entity';
 
 @Injectable()
 export class OvertimeService {
@@ -17,6 +18,8 @@ export class OvertimeService {
     private overtimeRepository: Repository<Overtime>,
     @InjectRepository(Attendance)
     private attendanceRepository: Repository<Attendance>,
+    @InjectRepository(AttendancePeriod)
+    private attendancePeriodRepository: Repository<AttendancePeriod>,
   ) {}
 
   async submitOvertime(dto: CreateOvertimeDto, user: UserPayload) {
@@ -25,7 +28,24 @@ export class OvertimeService {
       throw new ForbiddenException('Only employees can submit overtime');
     }
 
-    // Check if the employee has clocked out for the day
+    const period = await this.attendancePeriodRepository.findOne({
+      where: {
+        startDate: LessThanOrEqual(overtimeDate),
+        endDate: MoreThanOrEqual(overtimeDate),
+      },
+    });
+
+    if (!period) {
+      throw new BadRequestException(
+        'Admin has not created an attendance period',
+      );
+    }
+    if (period.status !== 'open') {
+      throw new BadRequestException(
+        'Attendance period is not open for overtime submission',
+      );
+    }
+
     const attendance = await this.attendanceRepository.findOne({
       where: {
         userId: user.id,
@@ -55,14 +75,14 @@ export class OvertimeService {
       where: {
         userId: user.id,
         overtimeDate: overtimeDate,
-        attendancePeriodId: attendance?.attendancePeriodId,
+        attendancePeriodId: parseInt(period.id)
       },
     });
 
     if (!existingOvertime) {
       const overtime = this.overtimeRepository.create({
         userId: user.id,
-        attendancePeriodId: attendance?.attendancePeriodId,
+        attendancePeriodId: parseInt(period.id),
         overtimeDate: overtimeDate,
         hours: dto.hours,
         createdBy: user.id,

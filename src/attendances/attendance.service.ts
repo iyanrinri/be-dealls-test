@@ -84,8 +84,11 @@ export class AttendanceService {
     return period;
   }
 
-  async submitAttendance(user: UserPayload): Promise<Attendance> {
-    const attendanceDate = new Date();
+  async submitAttendance(user: UserPayload, initDate?: Date): Promise<Attendance> {
+    let attendanceDate = initDate ? new Date(initDate) : new Date();
+    if (initDate && isNaN(attendanceDate.getTime())) {
+      throw new BadRequestException('Invalid initDate provided');
+    }
     const period = await this.attendancePeriodRepository.findOne({
       where: {
         startDate: LessThanOrEqual(attendanceDate),
@@ -105,7 +108,6 @@ export class AttendanceService {
       );
     }
 
-    // Check for existing attendance on the same day
     const existingAttendance = await this.attendanceRepository.findOne({
       where: {
         userId: user.id,
@@ -114,8 +116,12 @@ export class AttendanceService {
       },
     });
 
+    const day = attendanceDate.getDay();
+    if (day === 0 || day === 6) {
+      throw new BadRequestException('Cannot submit attendance on weekends');
+    }
+
     if (existingAttendance) {
-      // If both clockInTime and clockOutTime are already set, just return
       if (existingAttendance.clockInTime && existingAttendance.clockOutTime) {
         return existingAttendance;
       }
@@ -142,7 +148,6 @@ export class AttendanceService {
         this.auditLogService.createAuditLog(auditLogDto, user);
         return await this.attendanceRepository.save(existingAttendance);
       }
-      // If not updated, just return
       return existingAttendance;
     }
 
@@ -195,6 +200,12 @@ export class AttendanceService {
         attendancePeriodId: parseInt(periodId),
       },
       order: { attendanceDate: 'ASC' },
+    });
+  }
+
+  async listAttendancePeriods(): Promise<AttendancePeriod[]> {
+    return this.attendancePeriodRepository.find({
+      order: { startDate: 'DESC' },
     });
   }
 }

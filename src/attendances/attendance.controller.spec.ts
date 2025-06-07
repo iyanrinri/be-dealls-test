@@ -13,6 +13,7 @@ describe('AttendanceController', () => {
     createAttendancePeriod: jest.fn(),
     submitAttendance: jest.fn(),
     listAttendance: jest.fn(),
+    listAttendancePeriods: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -163,6 +164,34 @@ describe('AttendanceController', () => {
       mockAttendanceService.listAttendance = jest.fn();
       const result = await controller.listAttendance(mockRequest as any, '5');
       expect(mockAttendanceService.listAttendance).not.toHaveBeenCalled();
+      expect(result).toEqual({ message: 'Unauthorized' });
+    });
+  });
+
+  describe('listAttendancePeriods', () => {
+    it('should return attendance period list for authorized user', async () => {
+      const user: UserPayload = {
+        id: 1,
+        username: 'admin',
+        role: 'admin',
+        ip_address: '127.0.0.1',
+      };
+      const mockRequest = { user };
+      const expectedPeriods = [
+        { id: 1, startDate: new Date('2025-06-01'), endDate: new Date('2025-06-30'), status: 'open' },
+        { id: 2, startDate: new Date('2025-07-01'), endDate: new Date('2025-07-31'), status: 'closed' },
+      ];
+      mockAttendanceService.listAttendancePeriods.mockResolvedValue(expectedPeriods);
+      const result = await controller.listAttendancePeriods(mockRequest as any);
+      expect(mockAttendanceService.listAttendancePeriods).toHaveBeenCalled();
+      expect(result).toEqual(expectedPeriods);
+    });
+
+    it('should return unauthorized message if no user in request', async () => {
+      const mockRequest = { user: null };
+      mockAttendanceService.listAttendancePeriods.mockClear();
+      const result = await controller.listAttendancePeriods(mockRequest as any);
+      expect(mockAttendanceService.listAttendancePeriods).not.toHaveBeenCalled();
       expect(result).toEqual({ message: 'Unauthorized' });
     });
   });

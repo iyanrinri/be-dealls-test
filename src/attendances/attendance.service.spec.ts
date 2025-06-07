@@ -194,16 +194,17 @@ describe('AttendanceService', () => {
       mockAttendanceRepository.findOne.mockResolvedValue(undefined);
       mockAttendanceRepository.create.mockReturnValue(attendance);
       mockAttendanceRepository.save.mockResolvedValue(attendance);
-
+      // Set today to a weekday (Monday)
+      const monday = new Date('2025-06-09'); // 2025-06-09 is a Monday
+      jest.spyOn(global, 'Date').mockImplementation(() => monday as any);
       const result = await service.submitAttendance(user);
-
       expect(mockAttendancePeriodRepository.findOne).toHaveBeenCalled();
       expect(mockAttendanceRepository.findOne).toHaveBeenCalled();
       expect(mockAttendanceRepository.create).toHaveBeenCalledWith({
         userId: user.id,
         attendancePeriodId: parseInt(period.id),
-        attendanceDate: expect.any(Date),
-        clockInTime: expect.any(Date),
+        attendanceDate: monday,
+        clockInTime: monday,
         clockOutTime: undefined,
         createdBy: user.id,
         ipAddress: user.ip_address,
@@ -211,6 +212,7 @@ describe('AttendanceService', () => {
       });
       expect(mockAttendanceRepository.save).toHaveBeenCalledWith(attendance);
       expect(result).toEqual(attendance);
+      (global.Date as any).mockRestore();
     });
 
     it('should throw BadRequestException if attendance period does not exist', async () => {
@@ -229,18 +231,37 @@ describe('AttendanceService', () => {
     });
 
     it('should return existing attendance if already submitted for the same day', async () => {
-      // Set both clockInTime and clockOutTime to simulate a fully submitted attendance
+      const weekDay = new Date();
+      const dayOfWeek = weekDay.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+      if (dayOfWeek === 0) {
+        // Sunday: go back 2 days to Friday
+        weekDay.setDate(weekDay.getDate() - 2);
+      } else if (dayOfWeek === 6) {
+        // Saturday: go back 1 day to Friday
+        weekDay.setDate(weekDay.getDate() - 1);
+      }
       const submittedAttendance = {
         ...attendance,
-        clockInTime: today,
-        clockOutTime: today, // not undefined
+        clockInTime: weekDay,
+        clockOutTime: weekDay,
       };
       mockAttendancePeriodRepository.findOne.mockResolvedValue(period);
       mockAttendanceRepository.findOne.mockResolvedValue(submittedAttendance);
-      const result = await service.submitAttendance(user);
+      const result = await service.submitAttendance(user, weekDay);
       expect(mockAttendanceRepository.create).not.toHaveBeenCalled();
       expect(mockAttendanceRepository.save).not.toHaveBeenCalled();
       expect(result).toEqual(submittedAttendance);
+    });
+
+    it('should throw BadRequestException if trying to submit attendance on weekend', async () => {
+      mockAttendancePeriodRepository.findOne.mockResolvedValue(period);
+      mockAttendanceRepository.findOne.mockResolvedValue(undefined);
+      // Set today to a Saturday
+      const saturday = new Date('2025-06-07'); // 2025-06-07 is a Saturday
+      jest.spyOn(global, 'Date').mockImplementation(() => saturday as any);
+      await expect(service.submitAttendance(user)).rejects.toThrow('Cannot submit attendance on weekends');
+      (global.Date as any).mockRestore();
     });
   });
 });

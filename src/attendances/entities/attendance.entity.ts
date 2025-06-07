@@ -20,6 +20,12 @@ export class Attendance {
   @Column({ type: 'timestamp with time zone', name: 'clock_out_time' })
   clockOutTime?: Date;
 
+  @Column({ type: 'timestamp with time zone', name: 'created_at' })
+  createdAt?: Date;
+
+  @Column({ type: 'timestamp with time zone', name: 'updated_at' })
+  updatedAt?: Date;
+
   @Column({ type: 'bigint', name: 'created_by' })
   createdBy: number;
 

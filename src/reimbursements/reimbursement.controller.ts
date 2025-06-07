@@ -4,6 +4,7 @@ import {
   Body,
   UseGuards,
   Req,
+  Get,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { ReimbursementService } from './reimbursement.service';
@@ -27,5 +28,16 @@ export class ReimbursementController {
       return { message: 'Unauthorized' };
     }
     return this.reimbursementService.create(createReimbursementDto, reqUser);
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @Get()
+  async findAll(@Req() request: Request) {
+    const reqUser = request.user ? request.user : null;
+    if (!reqUser) {
+      return { message: 'Unauthorized' };
+    }
+    return this.reimbursementService.findAll(reqUser);
   }
 }

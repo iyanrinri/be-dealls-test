@@ -46,4 +46,12 @@ export class ReimbursementService {
     });
     return this.reimbursementRepository.save(reimbursement);
   }
+
+  async findAll(user: UserPayload): Promise<Reimbursement[]> {
+    if (!user) {
+      throw new Error('Unauthorized');
+    }
+    return this.reimbursementRepository.find({ where: { userId: user.id }, 
+      order: { createdAt: 'DESC' }, });
+  }
 }

@@ -17,6 +17,16 @@ import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
+  @Get('attendance-periods')
+  @ApiBearerAuth()
+  async listAttendancePeriods(@Req() request: Request) {
+    const reqUser = request.user ? request.user : null;
+    if (!reqUser) {
+      return { message: 'Unauthorized' };
+    }
+    return this.attendanceService.listAttendancePeriods();
+  }
+  
   @UseGuards(AdminGuard)
   @Post('attendance-period')
   @ApiBearerAuth()

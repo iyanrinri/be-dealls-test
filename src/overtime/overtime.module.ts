@@ -4,10 +4,11 @@ import { Overtime } from './entities/overtime.entity';
 import { OvertimeService } from './overtime.service';
 import { OvertimeController } from './overtime.controller';
 import { Attendance } from '../attendances/entities/attendance.entity';
+import { AttendancePeriod } from '../attendances/entities/attendance-period.entity';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Overtime, Attendance]), AuthModule],
+  imports: [TypeOrmModule.forFeature([Overtime, Attendance, AttendancePeriod]), AuthModule],
   controllers: [OvertimeController],
   providers: [OvertimeService],
   exports: [OvertimeService],
