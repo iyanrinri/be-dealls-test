@@ -83,8 +83,6 @@ After running migration and seed, you can log in with the following credentials:
   - Username: `employee1` to `employee100`
   - Password: `password1` to `password100`
 
----
-
 ## Testing
 - **Docker:**
   ```bash
@@ -101,6 +99,14 @@ After running migration and seed, you can log in with the following credentials:
 - After running the app, access the Swagger UI at: [http://localhost:3000/api](http://localhost:3000/api)
 - Use the "Authorize" button to input your JWT token for protected endpoints.
 - The API is self-documented with request/response schemas and authentication info.
+
+---
+
+## Demo
+A public demo is available at:
+- Backend API: [https://be-dealls.bromn.biz.id/api](https://be-dealls.bromn.biz.id/api)
+
+You can use the same credentials above to log-in and test the endpoints.
 
 ---
 
