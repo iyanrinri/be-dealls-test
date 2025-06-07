@@ -133,7 +133,7 @@ You can use the same credentials above to log-in and test the endpoints.
 - TypeORM
 - Docker
 - Swagger (OpenAPI)
-- Jest (unit & e2e testing)
+- Jest (unit testing)
 
 ---
 
