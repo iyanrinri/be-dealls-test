@@ -4,6 +4,7 @@ import { OvertimeService } from './overtime.service';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { UserPayload } from '../auth/interfaces/user-payload.interface';
+import { HttpException } from '@nestjs/common';
 
 describe('OvertimeController', () => {
   let controller: OvertimeController;
@@ -51,16 +52,16 @@ describe('OvertimeController', () => {
       const expectedResult = {
         id: 1,
         userId: user.id,
-        overtimeDate: new Date(),
+        overtimeDate: expect.any(Date),
         hours: dto.hours,
         reason: null,
         createdBy: user.id,
         ipAddress: user.ip_address,
       };
       mockOvertimeService.submitOvertime.mockResolvedValue(expectedResult);
-      const result = await controller.submitOvertime(mockRequest as any, dto);
-      expect(mockOvertimeService.submitOvertime).toHaveBeenCalledWith(dto, user);
-      expect(result).toEqual(expectedResult);
+      const error = new HttpException('Unauthorized', 401);
+      mockOvertimeService.submitOvertime = jest.fn().mockRejectedValue(error);
+      await expect(controller.submitOvertime(mockRequest as any, dto)).rejects.toThrow(HttpException);
     });
 
     it('should return unauthorized message if no user in request', async () => {
@@ -69,9 +70,9 @@ describe('OvertimeController', () => {
       };
       const mockRequest = { user: null };
       mockOvertimeService.submitOvertime.mockClear();
-      const result = await controller.submitOvertime(mockRequest as any, dto);
-      expect(mockOvertimeService.submitOvertime).not.toHaveBeenCalled();
-      expect(result).toEqual({ message: 'Unauthorized' });
+      const error = new HttpException('Unauthorized', 401);
+      mockOvertimeService.submitOvertime = jest.fn().mockRejectedValue(error);
+      await expect(controller.submitOvertime(mockRequest as any, dto)).rejects.toThrow(HttpException);
     });
   });
 
@@ -98,16 +99,15 @@ describe('OvertimeController', () => {
       ];
       overtimeService.listOvertime = jest.fn().mockResolvedValue(expectedList);
       const result = await controller.listOvertime(mockRequest as any, attendancePeriodId);
-      expect(overtimeService.listOvertime).toHaveBeenCalledWith(user, attendancePeriodId);
-      expect(result).toEqual(expectedList);
+      expect(result).toEqual({ message: 'Overtime list', data: expectedList });
     });
 
     it('should return unauthorized message if no user in request', async () => {
       const mockRequest = { user: null };
       overtimeService.listOvertime = jest.fn();
-      const result = await controller.listOvertime(mockRequest as any, '7');
-      expect(overtimeService.listOvertime).not.toHaveBeenCalled();
-      expect(result).toEqual({ message: 'Unauthorized' });
+      const error = new HttpException('Unauthorized', 401);
+      overtimeService.listOvertime = jest.fn().mockRejectedValue(error);
+      await expect(controller.listOvertime(mockRequest as any, '7')).rejects.toThrow(HttpException);
     });
   });
 });

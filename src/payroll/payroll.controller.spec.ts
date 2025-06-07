@@ -40,8 +40,7 @@ describe('PayrollController', () => {
     it('should return unauthorized if user is not present', async () => {
       const req: any = { user: null };
       const dto: RunPayrollDto = { attendancePeriodId: '1' } as any;
-      const result = await controller.runPayroll(req, dto);
-      expect(result).toEqual({ message: 'Unauthorized' });
+      await expect(controller.runPayroll(req, dto)).rejects.toThrow(HttpException);
     });
 
     it('should call payrollService.runPayroll and return result', async () => {
@@ -51,7 +50,7 @@ describe('PayrollController', () => {
       mockPayrollService.runPayroll.mockResolvedValueOnce(mockResult);
       const result = await controller.runPayroll(req, dto);
       expect(mockPayrollService.runPayroll).toHaveBeenCalledWith(req.user, '1');
-      expect(result).toEqual({ message: 'Payroll processed', result: mockResult });
+      expect(result).toEqual({ message: 'Payroll processed', data: mockResult });
     });
 
     it('should throw HttpException on error', async () => {
@@ -67,8 +66,8 @@ describe('PayrollController', () => {
   describe('listPayroll', () => {
     it('should return unauthorized if user is not present', async () => {
       const req: any = { user: null };
-      const result = await controller.listPayroll(req, undefined, undefined);
-      expect(result).toEqual({ message: 'Unauthorized' });
+      const error = new HttpException('Unauthorized', 401);
+      await expect(controller.listPayroll(req, undefined, undefined)).rejects.toThrow(HttpException);
     });
 
     it('should call payrollService.listPayroll and return result', async () => {
@@ -77,7 +76,7 @@ describe('PayrollController', () => {
       payrollService.listPayroll = jest.fn().mockResolvedValueOnce(mockResult);
       const result = await controller.listPayroll(req, '2', '1');
       expect(payrollService.listPayroll).toHaveBeenCalledWith({ attendancePeriodId: '2', employeeId: '1' });
-      expect(result).toEqual({ message: 'Payroll list', result: mockResult });
+      expect(result).toEqual({ message: 'Payroll list', data: mockResult });
     });
 
     it('should call payrollService.listPayroll with today if attendancePeriodId is not provided', async () => {
@@ -86,7 +85,7 @@ describe('PayrollController', () => {
       payrollService.listPayroll = jest.fn().mockResolvedValueOnce(mockResult);
       const result = await controller.listPayroll(req, undefined, undefined);
       expect(payrollService.listPayroll).toHaveBeenCalledWith({ attendancePeriodId: undefined, employeeId: undefined });
-      expect(result).toEqual({ message: 'Payroll list', result: mockResult });
+      expect(result).toEqual({ message: 'Payroll list', data: mockResult });
     });
 
     it('should throw HttpException on error', async () => {
@@ -101,14 +100,14 @@ describe('PayrollController', () => {
   describe('getMyPayslip', () => {
     it('should return unauthorized if user is not present', async () => {
       const req: any = { user: null };
-      const result = await controller.getMyPayslip(req, undefined);
-      expect(result).toEqual({ message: 'Unauthorized' });
+      const error = new HttpException('Unauthorized', 401);
+      await expect(controller.getMyPayslip(req, undefined)).rejects.toThrow(HttpException);
     });
 
     it('should return forbidden if user is not employee', async () => {
       const req: any = { user: { id: 1, role: 'admin' } };
-      const result = await controller.getMyPayslip(req, undefined);
-      expect(result).toEqual({ message: 'Forbidden' });
+      const error = new HttpException('Forbidden', 403);
+      await expect(controller.getMyPayslip(req, undefined)).rejects.toThrow(HttpException);
     });
 
     it('should call payrollService.getEmployeePayslip and return result', async () => {
@@ -117,7 +116,7 @@ describe('PayrollController', () => {
       payrollService.getEmployeePayslip = jest.fn().mockResolvedValueOnce(mockResult);
       const result = await controller.getMyPayslip(req, '3');
       expect(payrollService.getEmployeePayslip).toHaveBeenCalledWith(2, '3');
-      expect(result).toEqual({ message: 'Payslip breakdown', result: mockResult });
+      expect(result).toEqual({ message: 'Payslip breakdown', data: mockResult });
     });
 
     it('should throw HttpException on error', async () => {

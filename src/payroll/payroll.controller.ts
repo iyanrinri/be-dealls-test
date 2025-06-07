@@ -26,11 +26,14 @@ export class PayrollController {
     try {
       const reqUser = request.user ? request.user : null;
       if (!reqUser) {
-        return { message: 'Unauthorized' };
+        throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
       }
       const attendancePeriodId = dto.attendancePeriodId ? dto.attendancePeriodId.toString() : undefined;
       const result = await this.payrollService.runPayroll(reqUser, attendancePeriodId);
-      return { message: 'Payroll processed', result };
+      return {
+        message: 'Payroll processed',
+        data: result,
+      };
     } catch (e) {
       throw new HttpException(e.message, e.status || HttpStatus.BAD_REQUEST);
     }
@@ -59,10 +62,13 @@ export class PayrollController {
     try {
       const reqUser = request.user ? request.user : null;
       if (!reqUser) {
-        return { message: 'Unauthorized' };
+        throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
       }
       const result = await this.payrollService.listPayroll({ attendancePeriodId, employeeId });
-      return { message: 'Payroll list', result };
+      return {
+        message: 'Payroll list',
+        data: result,
+      };
     } catch (e) {
       throw new HttpException(e.message, e.status || HttpStatus.BAD_REQUEST);
     }
@@ -83,15 +89,15 @@ export class PayrollController {
     try {
       const reqUser = request.user ? request.user : null;
       if (!reqUser) {
-        return { message: 'Unauthorized' };
+        throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
       }
       if (reqUser.role !== 'employee') {
-        return { message: 'Forbidden' };
+        throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
       }
       const result = await this.payrollService.getEmployeePayslip(reqUser.id, attendancePeriodId);
       return {
         message: 'Payslip breakdown',
-        result, // restore for test compatibility
+        data: result,
       };
     } catch (e) {
       throw new HttpException(e.message, e.status || HttpStatus.BAD_REQUEST);
@@ -116,7 +122,6 @@ export class PayrollController {
       if (!reqUser) {
         return { message: 'Unauthorized' };
       }
-      // Only admin can access
       if (reqUser.role !== 'admin') {
         return { message: 'Forbidden' };
       }

@@ -6,9 +6,14 @@ import { OvertimeController } from './overtime.controller';
 import { Attendance } from '../attendances/entities/attendance.entity';
 import { AttendancePeriod } from '../attendances/entities/attendance-period.entity';
 import { AuthModule } from '../auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Overtime, Attendance, AttendancePeriod]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([Overtime, Attendance, AttendancePeriod]),
+    AuthModule,
+    JwtModule.register({}),
+  ],
   controllers: [OvertimeController],
   providers: [OvertimeService],
   exports: [OvertimeService],

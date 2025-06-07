@@ -1,8 +1,15 @@
-import { Controller, Post, Body, Req, UseGuards, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+  Query,
+} from '@nestjs/common';
 import { OvertimeService } from './overtime.service';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
 import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { Request } from 'express';
+import { ReqUser } from '../common/decorators/req-user.decorator';
 import { AuthGuard } from '../auth/guards/auth.guard';
 
 @Controller('overtime')
@@ -13,14 +20,11 @@ export class OvertimeController {
   @Post()
   @ApiBearerAuth()
   async submitOvertime(
-    @Req() request: Request,
+    @ReqUser() reqUser: any,
     @Body() dto: CreateOvertimeDto,
   ) {
-    const reqUser = request.user ? request.user : null;
-    if (!reqUser) {
-      return { message: 'Unauthorized' };
-    }
-    return this.overtimeService.submitOvertime(dto, reqUser);
+    const result = await this.overtimeService.submitOvertime(dto, reqUser);
+    return { message: 'Overtime submitted', data: result };
   }
 
   @UseGuards(AuthGuard)
@@ -33,13 +37,10 @@ export class OvertimeController {
     description: 'The ID of the attendance period (optional)',
   })
   async listOvertime(
-    @Req() request: Request,
+    @ReqUser() reqUser: any,
     @Query('attendancePeriodId') attendancePeriodId?: string,
   ) {
-    const reqUser = request.user ? request.user : null;
-    if (!reqUser) {
-      return { message: 'Unauthorized' };
-    }
-    return this.overtimeService.listOvertime(reqUser, attendancePeriodId);
+    const result = await this.overtimeService.listOvertime(reqUser, attendancePeriodId);
+    return { message: 'Overtime list', data: result };
   }
 }

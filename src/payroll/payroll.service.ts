@@ -163,27 +163,22 @@ export class PayrollService {
     });
     if (!payslip) throw new NotFoundException('Payslip not found');
 
-    // For test compatibility: if only payslip is requested, return raw payslip
     if (process.env.NODE_ENV === 'test') {
       return payslip;
     }
 
-    // Fetch attendances
     const attendances = await this.attendanceRepo.find({
       where: { userId: Number(userId), attendancePeriodId: Number(periodId) },
       order: { attendanceDate: 'ASC' },
     });
-    // Fetch overtimes
     const overtimes = await this.overtimeRepo.find({
       where: { userId: Number(userId), attendancePeriodId: Number(periodId) },
       order: { overtimeDate: 'ASC' },
     });
-    // Fetch reimbursements
     const reimbursements = await this.reimbursementRepo.find({
       where: { userId: Number(userId), attendancePeriodId: Number(periodId) },
       order: { createdAt: 'ASC' },
     });
-    // Format response for frontend
     return {
       attendance: {
         workingDays: payslip.workingDays,
@@ -237,12 +232,10 @@ export class PayrollService {
       if (!period) throw new NotFoundException('Attendance period not found');
       periodId = period.id;
     }
-    // Get all payslips for the period
     const payslips = await this.payslipRepo.find({
       where: { attendancePeriodId: Number(periodId) },
       relations: ['user'],
     });
-    // Prepare summary per employee
     const employees = payslips.map(p => ({
       userId: p.userId,
       username: p.user?.username || undefined,
@@ -253,7 +246,6 @@ export class PayrollService {
       attendanceCount: p.attendanceCount,
       performanceAttendance: p.performanceAttendance,
     }));
-    // Calculate total take-home pay
     const totalTakeHome = payslips.reduce((sum, p) => sum + parseFloat(p.totalTakeHome), 0).toFixed(2);
     return {
       summary: {

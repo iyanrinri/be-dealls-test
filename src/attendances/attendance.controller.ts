@@ -3,58 +3,52 @@ import {
   Post,
   Body,
   UseGuards,
-  Req,
   Get,
   Query,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { AttendanceService } from './attendance.service';
 import { CreateAttendancePeriodDto } from './dto/create-attendance-period.dto';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ReqUser } from '../common/decorators/req-user.decorator';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 @Controller('attendance')
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
   @Get('attendance-periods')
+  @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  async listAttendancePeriods(@Req() request: Request) {
-    const reqUser = request.user ? request.user : null;
-    if (!reqUser) {
-      return { message: 'Unauthorized' };
-    }
-    return this.attendanceService.listAttendancePeriods();
+  async listAttendancePeriods(@ReqUser() reqUser: any) {
+    const result = await this.attendanceService.listAttendancePeriods();
+    return { message: 'Attendance periods list', data: result };
   }
-  
+
   @UseGuards(AdminGuard)
   @Post('attendance-period')
   @ApiBearerAuth()
-  createAttendancePeriod(
-    @Req() request: Request,
+  async createAttendancePeriod(
+    @ReqUser() reqUser: any,
     @Body() createAttendancePeriodDto: CreateAttendancePeriodDto,
   ) {
-    const reqUser = request.user ? request.user : null;
-    if (!reqUser) {
-      return { message: 'Unauthorized' };
-    }
-    return this.attendanceService.createAttendancePeriod(
+    const result = await this.attendanceService.createAttendancePeriod(
       createAttendancePeriodDto,
       reqUser,
     );
+    return { message: 'Attendance period created', data: result };
   }
 
   @Post('check')
+  @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  submitAttendance(@Req() request: Request) {
-    const reqUser = request.user ? request.user : null;
-    if (!reqUser) {
-      return { message: 'Unauthorized' };
-    }
-    return this.attendanceService.submitAttendance(reqUser);
+  async submitAttendance(@ReqUser() reqUser: any) {
+    const result = await this.attendanceService.submitAttendance(reqUser);
+    return { message: 'Attendance submitted', data: result };
   }
 
   @Get('list')
+  @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiQuery({
     name: 'attendancePeriodId',
@@ -63,13 +57,13 @@ export class AttendanceController {
     description: 'The ID of the attendance period (optional)',
   })
   async listAttendance(
-    @Req() request: Request,
+    @ReqUser() reqUser: any,
     @Query('attendancePeriodId') attendancePeriodId?: string,
   ) {
-    const reqUser = request.user ? request.user : null;
-    if (!reqUser) {
-      return { message: 'Unauthorized' };
-    }
-    return this.attendanceService.listAttendance(reqUser, attendancePeriodId);
+    const result = await this.attendanceService.listAttendance(
+      reqUser,
+      attendancePeriodId,
+    );
+    return { message: 'Attendance list', data: result };
   }
 }

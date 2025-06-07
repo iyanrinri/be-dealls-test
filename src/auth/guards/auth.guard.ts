@@ -31,7 +31,7 @@ export class AuthGuard implements CanActivate {
     const request: Request = context.switchToHttp().getRequest<Request>();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Unauthorized');
     }
     try {
       request['user'] = await this.jwtService.verifyAsync<UserPayload>(token, {
@@ -41,7 +41,7 @@ export class AuthGuard implements CanActivate {
       request['user'].request_id =
         (request.headers['x-request-id'] as string) || uuidv4();
     } catch {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Unauthorized');
     }
     return true;
   }

@@ -19,6 +19,8 @@ import { ReimbursementModule } from './reimbursements/reimbursement.module';
 import { PayrollModule } from './payroll/payroll.module';
 import { Payslip } from './payroll/entities/payslip.entity';
 import { UsersModule } from './users/user.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 dotenv.config();
 
 @Module({
@@ -42,6 +44,12 @@ dotenv.config();
     UsersModule,
   ],
   controllers: [],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+    },
+  ],
 })
 export class AppModule {}

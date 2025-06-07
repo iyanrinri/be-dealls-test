@@ -29,6 +29,7 @@ export class AuthController {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    return this.authService.login(user);
+    const result = await this.authService.login(user);
+    return { message: 'Login success', data: result };
   }
 }

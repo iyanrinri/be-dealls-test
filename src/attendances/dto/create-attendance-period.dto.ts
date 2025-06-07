@@ -16,9 +16,4 @@ export class CreateAttendancePeriodDto {
   @IsNotEmpty({ message: 'endDate is required' })
   @IsDateString({}, { message: 'endDate must be a valid date (YYYY-MM-DD)' })
   endDate: string;
-
-  @ApiProperty({ example: 'open', required: false })
-  @IsOptional()
-  @IsString({ message: 'status must be a string' })
-  status?: string;
 }

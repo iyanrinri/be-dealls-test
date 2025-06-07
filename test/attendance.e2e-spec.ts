@@ -3,14 +3,14 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { PayrollPeriod } from '../src/attendances/entities/attendance-period.entity';
+import { AttendancePeriod } from '../src/attendances/entities/attendance-period.entity';
 import { JwtService } from '@nestjs/jwt';
 import { AdminGuard } from '../src/auth/guards/admin.guard';
 
 describe('AttendanceController (e2e)', () => {
   let app: INestApplication;
   let jwtService: JwtService;
-  let payrollPeriodRepository: any;
+  let attendancePeriodRepository: any;
 
   const mockAdminUser = {
     id: 1,
@@ -19,7 +19,7 @@ describe('AttendanceController (e2e)', () => {
     ip_address: '127.0.0.1',
   };
 
-  const mockPayrollPeriod = {
+  const mockAttendancePeriod = {
     id: '1',
     startDate: new Date('2025-06-01'),
     endDate: new Date('2025-06-30'),
@@ -33,10 +33,10 @@ describe('AttendanceController (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(getRepositoryToken(PayrollPeriod))
+      .overrideProvider(getRepositoryToken(AttendancePeriod))
       .useValue({
-        create: jest.fn().mockReturnValue(mockPayrollPeriod),
-        save: jest.fn().mockResolvedValue(mockPayrollPeriod),
+        create: jest.fn().mockReturnValue(mockAttendancePeriod),
+        save: jest.fn().mockResolvedValue(mockAttendancePeriod),
       })
       .overrideGuard(AdminGuard)
       .useValue({ canActivate: jest.fn(() => true) })
@@ -47,7 +47,7 @@ describe('AttendanceController (e2e)', () => {
     await app.init();
 
     jwtService = moduleFixture.get<JwtService>(JwtService);
-    payrollPeriodRepository = moduleFixture.get(getRepositoryToken(PayrollPeriod));
+    attendancePeriodRepository = moduleFixture.get(getRepositoryToken(AttendancePeriod));
   });
 
   afterEach(async () => {
@@ -77,14 +77,14 @@ describe('AttendanceController (e2e)', () => {
         status: 'open',
       }));
       
-      expect(payrollPeriodRepository.create).toHaveBeenCalledWith(
+      expect(attendancePeriodRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
           startDate: createDto.startDate,
           endDate: createDto.endDate,
           status: createDto.status,
         }),
       );
-      expect(payrollPeriodRepository.save).toHaveBeenCalled();
+      expect(attendancePeriodRepository.save).toHaveBeenCalled();
     });
 
     it('should return 400 for invalid date range', async () => {

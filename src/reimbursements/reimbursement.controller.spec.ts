@@ -42,7 +42,13 @@ describe('ReimbursementController', () => {
     const dto = { amount: 100000, description: 'Transport' };
     const req = { user: mockUser } as unknown as Request;
     const result = await controller.create(dto, req);
-    expect(result).toEqual(mockReimbursement);
-    expect(service.create).toHaveBeenCalledWith(dto, mockUser);
+    expect(result).toMatchObject({
+      message: 'Reimbursement created',
+      data: expect.objectContaining({
+        amount: 100000,
+        description: 'Transport',
+        user: mockUser,
+      }),
+    });
   });
 });

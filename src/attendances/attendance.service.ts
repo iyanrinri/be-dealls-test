@@ -23,7 +23,7 @@ export class AttendanceService {
     dto: CreateAttendancePeriodDto,
     user: UserPayload,
   ): Promise<AttendancePeriod> {
-    const { startDate, endDate, status } = dto;
+    const { startDate, endDate } = dto;
 
     if (new Date(endDate) < new Date(startDate)) {
       throw new BadRequestException('End date must be after start date');
@@ -35,33 +35,17 @@ export class AttendanceService {
       },
     });
     if (existingPeriod) {
-      if (status) {
-        existingPeriod.status = status || 'open';
-      }
-      existingPeriod.updatedBy = user.id;
-      const auditLogDto: CreateAuditLogDto = {
-        userId: user.id,
-        requestId: user.request_id || undefined,
-        action: 'update',
-        tableName: 'attendance_periods',
-        recordId: existingPeriod.id.toString(),
-        ipAddress: user.ip_address || undefined,
-        changes: {
-          status: status,
-          updatedBy: user.id,
-        },
-      };
-      this.auditLogService.createAuditLog(auditLogDto, user);
-      return this.attendancePeriodRepository.save(existingPeriod);
+      throw new BadRequestException('Attendance period already exists');
     }
-    const period = this.attendancePeriodRepository.create({
+    const data = {
       startDate: startDate,
       endDate: endDate,
-      status: status,
+      status: 'open',
       createdBy: user.id,
       ipAddress: user.ip_address || undefined,
       updatedBy: user.id,
-    });
+    }
+    const period = this.attendancePeriodRepository.create(data);
 
     const savedPeriod = await this.attendancePeriodRepository.save(period);
     const auditLogDto: CreateAuditLogDto = {
@@ -71,14 +55,7 @@ export class AttendanceService {
       tableName: 'attendance_periods',
       recordId: savedPeriod.id.toString(),
       ipAddress: user.ip_address || undefined,
-      changes: {
-        startDate: startDate,
-        endDate: endDate,
-        status: status,
-        createdBy: user.id,
-        ipAddress: user.ip_address || undefined,
-        updatedBy: user.id,
-      },
+      changes: data,
     };
     this.auditLogService.createAuditLog(auditLogDto, user);
     return period;
@@ -151,7 +128,7 @@ export class AttendanceService {
       return existingAttendance;
     }
 
-    const attendance = this.attendanceRepository.create({
+    const data = {
       userId: user.id,
       attendancePeriodId: parseInt(period.id || '0'),
       attendanceDate: attendanceDate,
@@ -160,7 +137,8 @@ export class AttendanceService {
       createdBy: user.id,
       ipAddress: user.ip_address || undefined,
       updatedBy: user.id,
-    });
+    };
+    const attendance = this.attendanceRepository.create(data);
     const savedAttendance = await this.attendanceRepository.save(attendance);
     const auditLogDto: CreateAuditLogDto = {
       userId: user.id,
@@ -169,10 +147,7 @@ export class AttendanceService {
       tableName: 'attendances',
       recordId: savedAttendance.id.toString(),
       ipAddress: user.ip_address || undefined,
-      changes: {
-        attendanceDate: attendanceDate,
-        clockInTime: new Date(),
-      },
+      changes: data,
     };
     this.auditLogService.createAuditLog(auditLogDto, user);
     return savedAttendance;

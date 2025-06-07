@@ -53,7 +53,7 @@ describe('AuthController', () => {
         'admin123',
       );
       expect(mockAuthService.login).toHaveBeenCalledWith(user);
-      expect(result).toEqual(token);
+      expect(result).toEqual({ message: 'Login success', data: token });
     });
 
     it('should throw UnauthorizedException when credentials are invalid', async () => {

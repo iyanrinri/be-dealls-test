@@ -5,11 +5,13 @@ import { ReimbursementService } from './reimbursement.service';
 import { ReimbursementController } from './reimbursement.controller';
 import { AuthModule } from '../auth/auth.module';
 import { AttendancePeriod } from '../attendances/entities/attendance-period.entity';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Reimbursement, AttendancePeriod]),
     AuthModule,
+    JwtModule.register({}),
   ],
   controllers: [ReimbursementController],
   providers: [ReimbursementService],

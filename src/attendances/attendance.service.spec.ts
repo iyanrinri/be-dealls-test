@@ -65,7 +65,6 @@ describe('AttendanceService', () => {
       const dto: CreateAttendancePeriodDto = {
         startDate: '2025-06-01',
         endDate: '2025-06-30',
-        status: 'open',
       };
 
       const user: UserPayload = {
@@ -79,7 +78,7 @@ describe('AttendanceService', () => {
         id: 1,
         startDate: new Date(dto.startDate),
         endDate: new Date(dto.endDate),
-        status: dto.status,
+        status: 'open',
         createdBy: user.id,
         ipAddress: user.ip_address,
         updatedBy: user.id,
@@ -93,7 +92,7 @@ describe('AttendanceService', () => {
       expect(mockAttendancePeriodRepository.create).toHaveBeenCalledWith({
         startDate: dto.startDate,
         endDate: dto.endDate,
-        status: dto.status,
+        status: 'open',
         createdBy: user.id,
         ipAddress: user.ip_address,
         updatedBy: user.id,
@@ -106,7 +105,6 @@ describe('AttendanceService', () => {
       const dto: CreateAttendancePeriodDto = {
         startDate: '2025-06-30',
         endDate: '2025-06-01',
-        status: 'open',
       };
 
       const user: UserPayload = {
@@ -153,7 +151,7 @@ describe('AttendanceService', () => {
       expect(mockAttendancePeriodRepository.create).toHaveBeenCalledWith({
         startDate: dto.startDate,
         endDate: dto.endDate,
-        status: undefined,
+        status: 'open',
         createdBy: user.id,
         ipAddress: undefined,
         updatedBy: user.id,
