@@ -6,16 +6,22 @@ import { CreateReimbursementDto } from './dto/create-reimbursement.dto';
 import { UserPayload } from '../auth/interfaces/user-payload.interface';
 import { AttendancePeriod } from '../attendances/entities/attendance-period.entity';
 import { AuditLogService } from '../audit-logs/audit-log.service';
+import * as winston from 'winston';
+import { loggerConfig } from '../config/logger.config';
+import { Logger } from 'winston';
 
 @Injectable()
 export class ReimbursementService {
+  private logger: Logger;
   constructor(
     @InjectRepository(Reimbursement)
     private readonly reimbursementRepository: Repository<Reimbursement>,
     @InjectRepository(AttendancePeriod)
     private attendancePeriodRepository: Repository<AttendancePeriod>,
     private auditLogService: AuditLogService,
-  ) {}
+  ) {
+    this.logger = winston.createLogger(loggerConfig);
+  }
 
   async create(
     createReimbursementDto: CreateReimbursementDto,
@@ -46,13 +52,15 @@ export class ReimbursementService {
       updatedBy: user.id,
     });
     const savedReimbursement = await this.reimbursementRepository.save(reimbursement);
-    await this.auditLogService.logAction(
+    this.auditLogService.logAction(
       user,
       'create',
       'reimbursements',
       savedReimbursement.id.toString(),
       createReimbursementDto
-    );
+    ).catch((err) => {
+      this.logger.error(`[AUDIT_ERROR] Failed log audit: ${err.message}`);
+    });
     return savedReimbursement;
   }
 

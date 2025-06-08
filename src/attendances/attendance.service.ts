@@ -7,17 +7,22 @@ import { AttendancePeriod } from './entities/attendance-period.entity';
 import { CreateAttendancePeriodDto } from './dto/create-attendance-period.dto';
 import { UserPayload } from '../auth/interfaces/user-payload.interface';
 import { AuditLogService } from '../audit-logs/audit-log.service';
-import { User } from '../users/entities/user.entity';
+import { loggerConfig } from '../config/logger.config';
+import { Logger } from 'winston';
+import * as winston from 'winston';
 
 @Injectable()
 export class AttendanceService {
+  private logger: Logger;
   constructor(
     @InjectRepository(Attendance)
     private attendanceRepository: Repository<Attendance>,
     @InjectRepository(AttendancePeriod)
     private attendancePeriodRepository: Repository<AttendancePeriod>,
     private auditLogService: AuditLogService,
-  ) {}
+  ) {
+    this.logger = winston.createLogger(loggerConfig);
+  }
 
   async createAttendancePeriod(
     dto: CreateAttendancePeriodDto,
@@ -47,13 +52,15 @@ export class AttendanceService {
     const period = this.attendancePeriodRepository.create(data);
 
     const savedPeriod = await this.attendancePeriodRepository.save(period);
-    await this.auditLogService.logAction(
+    this.auditLogService.logAction(
       user,
       'create',
       'attendance_periods',
       savedPeriod.id.toString(),
       data
-    );
+    ).catch((err) => {
+      this.logger.error(`[AUDIT_ERROR] Failed log audit: ${err.message}`);
+    });
     return period;
   }
 
@@ -107,13 +114,15 @@ export class AttendanceService {
         updated = true;
       }
       if (updated) {
-        await this.auditLogService.logAction(
+        this.auditLogService.logAction(
           user,
           'update',
           'attendances',
           existingAttendance.id.toString(),
           { clockOutTime: attendanceDate }
-        );
+        ).catch((err) => {
+          this.logger.error(`[AUDIT_ERROR] Failed log audit: ${err.message}`);
+        });
         return await this.attendanceRepository.save(existingAttendance);
       }
       return existingAttendance;
@@ -130,13 +139,15 @@ export class AttendanceService {
     };
     const attendance = this.attendanceRepository.create(data);
     const savedAttendance = await this.attendanceRepository.save(attendance);
-    await this.auditLogService.logAction(
+    this.auditLogService.logAction(
       user,
       'create',
       'attendances',
       savedAttendance.id.toString(),
       data
-    );
+    ).catch((err) => {
+      this.logger.error(`[AUDIT_ERROR] Failed log audit: ${err.message}`);
+    });
     return savedAttendance;
   }
 

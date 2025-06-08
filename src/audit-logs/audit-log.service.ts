@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, FindManyOptions } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { AuditLog } from './entities/audit-log.entity';
 import { UserPayload } from '../auth/interfaces/user-payload.interface';
 import { CreateAuditLogDto } from './dto/create-audit-log.dto';
 import { v4 as uuidv4 } from 'uuid';
-import { User } from '../users/entities/user.entity';
 import { Logger } from 'winston';
 import { loggerConfig } from '../config/logger.config';
 import * as winston from 'winston';

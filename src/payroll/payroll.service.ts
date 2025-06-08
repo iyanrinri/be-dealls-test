@@ -13,9 +13,13 @@ import { User } from '../users/entities/user.entity';
 import { UserPayload } from '../auth/interfaces/user-payload.interface';
 import { Attendance } from '../attendances/entities/attendance.entity';
 import { AuditLogService } from '../audit-logs/audit-log.service';
+import * as winston from 'winston';
+import { loggerConfig } from '../config/logger.config';
+import { Logger } from 'winston';
 
 @Injectable()
 export class PayrollService {
+  private logger: Logger;
   constructor(
     @InjectRepository(Payslip)
     private payslipRepo: Repository<Payslip>,
@@ -30,7 +34,9 @@ export class PayrollService {
     @InjectRepository(Attendance)
     private attendanceRepo: Repository<Attendance>,
     private auditLogService: AuditLogService,
-  ) {}
+  ) {
+    this.logger = winston.createLogger(loggerConfig);
+  }
 
   async runPayroll(userPayload: UserPayload, attendancePeriodId?: string) {
     let period: AttendancePeriod | null;
@@ -116,16 +122,17 @@ export class PayrollService {
         })
       );
     }
-    console.log(payslips);
     await this.payslipRepo.save(payslips);
     for (const payslip of payslips) {
-      await this.auditLogService.logAction(
+      this.auditLogService.logAction(
         userPayload,
         'create',
         'payslips',
         payslip.id.toString(),
         payslip
-      );
+      ).catch((err) => {
+        this.logger.error(`[AUDIT_ERROR] Failed log audit: ${err.message}`);
+      });
     }
     // Lock the period
     period.status = 'processed';

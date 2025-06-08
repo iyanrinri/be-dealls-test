@@ -11,9 +11,13 @@ import { UserPayload } from '../auth/interfaces/user-payload.interface';
 import { Attendance } from '../attendances/entities/attendance.entity';
 import { AttendancePeriod } from '../attendances/entities/attendance-period.entity';
 import { AuditLogService } from '../audit-logs/audit-log.service';
+import { loggerConfig } from '../config/logger.config';
+import { Logger } from 'winston';
+import * as winston from 'winston';
 
 @Injectable()
 export class OvertimeService {
+  private logger: Logger;
   constructor(
     @InjectRepository(Overtime)
     private overtimeRepository: Repository<Overtime>,
@@ -22,7 +26,9 @@ export class OvertimeService {
     @InjectRepository(AttendancePeriod)
     private attendancePeriodRepository: Repository<AttendancePeriod>,
     private auditLogService: AuditLogService,
-  ) {}
+  ) {
+    this.logger = winston.createLogger(loggerConfig);
+  }
 
   async submitOvertime(dto: CreateOvertimeDto, user: UserPayload) {
     const overtimeDate = new Date();
@@ -90,25 +96,29 @@ export class OvertimeService {
         createdBy: user.id,
       });
       const savedOvertime = await this.overtimeRepository.save(overtime);
-      await this.auditLogService.logAction(
+      this.auditLogService.logAction(
         user,
         'create',
         'overtimes',
         savedOvertime.id.toString(),
         dto
-      );
+      ).catch((err) => {
+        this.logger.error(`[AUDIT_ERROR] Failed log audit: ${err.message}`);
+      });
       return savedOvertime;
     }
     existingOvertime.hours = dto.hours;
     existingOvertime.updatedBy = user.id;
     const updatedOvertime = await this.overtimeRepository.save(existingOvertime);
-    await this.auditLogService.logAction(
+    this.auditLogService.logAction(
       user,
       'update',
       'overtimes',
       updatedOvertime.id.toString(),
       { hours: dto.hours }
-    );
+    ).catch((err) => {
+      this.logger.error(`[AUDIT_ERROR] Failed log audit: ${err.message}`);
+    });
     return updatedOvertime;
   }
 
